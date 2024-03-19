@@ -1,0 +1,34 @@
+#pragma once
+#include "Vector2f.h"
+#include <Charlie2D.h>
+
+struct EditorDataItem {
+  EditorDataItem(std::string _name, void *_value, std::type_index _type)
+      : name(_name), value(_value), type(_type) {}
+  std::string name;
+  void *value;
+  std::type_index type;
+};
+
+void imguiDataPanel(EditorDataItem data) {
+  if (data.type == typeid(float)) {
+    ImGui::InputFloat(data.name.c_str(), static_cast<float *>(data.value));
+  }
+
+  else if (data.type == typeid(Vector2f)) {
+    Vector2f *vector = static_cast<Vector2f *>(data.value);
+    ImGui::InputFloat("x", static_cast<float *>(&vector->x));
+    ImGui::InputFloat("y", static_cast<float *>(&vector->y));
+  }
+
+  else if (data.type == typeid(Box)) {
+    Box *box = static_cast<Box *>(data.value);
+    Vector2f *position = static_cast<Vector2f *>(&box->position);
+    Vector2f *size = static_cast<Vector2f *>(&box->size);
+
+    ImGui::InputFloat("x", static_cast<float *>(&position->x));
+    ImGui::InputFloat("y", static_cast<float *>(&position->y));
+    ImGui::InputFloat("w", static_cast<float *>(&size->x));
+    ImGui::InputFloat("h", static_cast<float *>(&size->y));
+  }
+}
