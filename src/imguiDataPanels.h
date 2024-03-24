@@ -1,23 +1,14 @@
 #pragma once
+#include "Component.h"
 #include "Vector2f.h"
 #include "imgui.h"
 #include <Charlie2D.h>
 #include <format>
 
-struct EditorDataItem {
-  EditorDataItem(std::string _name, void *_value, std::type_index _type,
-                 std::type_index _componentType)
-      : name(_name), value(_value), type(_type), componentType(_componentType) {
-  }
-  std::string name;
-  void *value;
-  std::type_index type;
-  std::type_index componentType;
-};
-
-void imguiDataPanel(EditorDataItem data) {
+void imguiDataPanel(PropertyData data) {
   if (data.type == typeid(float)) {
-    ImGui::InputFloat(std::format("##{}float", data.name).c_str(), static_cast<float *>(data.value));
+    ImGui::InputFloat(std::format("##{}float", data.name).c_str(),
+                      static_cast<float *>(data.value));
   }
 
   else if (data.type == typeid(Vector2f)) {
@@ -54,5 +45,10 @@ void imguiDataPanel(EditorDataItem data) {
     ImGui::SameLine();
     ImGui::InputFloat(std::format("##{}boxh", data.name).c_str(),
                       static_cast<float *>(&size->y));
+  }
+
+  else if (data.type == typeid(bool)) {
+    bool *checkbox = static_cast<bool *>(data.value);
+    ImGui::Checkbox(std::format("##{}bool", data.name).c_str(), checkbox);
   }
 }

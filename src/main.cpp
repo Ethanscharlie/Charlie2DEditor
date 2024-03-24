@@ -1,41 +1,39 @@
 #include "Camera.h"
 #include "Charlie2D.h"
 #include "Component.h"
+#include "Entity.h"
 #include "ExtendedComponent.h"
 #include "GameManager.h"
 #include "InputManager.h"
+#include "LDTKEntity.h"
+#include "Serializer.h"
 #include "Vector2f.h"
 #include "imgui.h"
 #include "move.h"
 #include <any>
+#include <cstdlib>
 #include <format>
+#include <fstream>
 #include <string>
 #include <typeindex>
 
 #include "imguiDataPanels.h"
+#include "imguiTheme.h"
 
-class EditorData : public ExtendedComponent {
-public:
-  template <typename T, typename C>
-  void registerComponent(std::string name, T *number, C *component) {
-    data.push_back(EditorDataItem(name, number, typeid(T), typeid(C)));
-  }
-
-  std::vector<EditorDataItem> data;
-};
+#include "include_tmp.h"
 
 Entity *selectedEntity = nullptr;
 
-class Player : public ExtendedComponent {
-public:
-  void start() override {
-    entity->add<EditorData>()->registerComponent("Speed", &speed, this);
-    entity->add<EditorData>()->registerComponent("Some Position", &somePos, this);
+json serializeAllEntities() {
+  json entitiesListJson;
+  for (Entity *entity : GameManager::getAllObjects()) {
+    if (entity->tag[0] == '$')
+      continue;
+    entitiesListJson["Scene"][entity->tag].push_back(serialize(entity));
   }
 
-  float speed = 0.0f;
-  Vector2f somePos = {10, 10};
-};
+  return entitiesListJson;
+}
 
 void changeSelectedEntity(Entity *entity) {
   if (entity->tag[0] == '$')
@@ -73,23 +71,74 @@ public:
                              GameManager::currentWindowSize.y);
 
     ImGui_ImplSDLRenderer2_NewFrame();
-    ImGui_ImplSDL2_NewFrame(GameManager::window);
+    ImGui_ImplSDL2_NewFrame();
 
     ImGui::NewFrame();
+    ImGui::SetNextWindowSize(ImVec2(600, 1000), ImGuiCond_FirstUseEver);
     ImGui::Begin("Entities");
+
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Recompile")) {
+          std::exit(42);
+        }
+        if (ImGui::MenuItem("Save")) {
+          json jsonData = serializeAllEntities();
+
+          std::ofstream file("../Project.ch2dscene");
+          file << std::setw(2) << jsonData << std::endl;
+          file.close();
+        }
+        if (ImGui::MenuItem("Open")) {
+          std::ifstream file("../Project.ch2dscene");
+          json jsonData = json::parse(file);
+          file.close();
+
+          std::cout << std::setw(2) << jsonData << std::endl;
+
+          selectedEntity = nullptr;
+          for (Entity *entity : GameManager::getAllObjects()) {
+            if (entity->tag[0] == '$')
+              continue;
+            entity->toDestroy = true;
+          }
+          for (json entityGroup : jsonData["Scene"]) {
+            for (json entityJson : entityGroup) {
+              deserialize(entityJson);
+            }
+          }
+        }
+        if (ImGui::MenuItem("Exit")) {
+          std::exit(1);
+        }
+        ImGui::EndMenu();
+      }
+      ImGui::EndMainMenuBar();
+    }
+
+    if (ImGui::Button("Create")) {
+      GameManager::createEntity("New Entity");
+    }
 
     ImGui::BeginChild("Items", ImVec2(150, 0),
                       ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
 
-    for (Entity *entity : GameManager::getAllObjects()) {
-      const std::string &tag = entity->tag;
+    int elementIndex = 0;
+    auto all = GameManager::getAllObjects();
+    for (auto it = all.begin(); it != all.end(); it++) {
+      Entity *entity = *it;
+      const std::string &tag =
+          std::format("{} {}", entity->tag, std::to_string(elementIndex));
 
       if (tag[0] == '$')
         continue;
+
+      elementIndex++;
       if (ImGui::Selectable(tag.c_str(), selectedEntity == entity)) {
         changeSelectedEntity(entity);
       }
     }
+
     ImGui::EndChild();
 
     ImGui::SameLine();
@@ -97,6 +146,15 @@ public:
     if (selectedEntity != nullptr) {
       Box box = selectedEntity->box->getBox();
       ImGui::Text(selectedEntity->tag.c_str());
+
+      ImGui::SameLine();
+      if (ImGui::Button("Destroy")) {
+        selectedEntity->toDestroy = true;
+        selectedEntity = nullptr;
+        ImGui::EndGroup();
+        goto FRAME_END;
+      }
+
       ImGui::Text(std::format("Center {}, {}\nSize {}, {}", box.getCenter().x,
                               box.getCenter().y, box.size.x, box.size.y)
                       .c_str());
@@ -109,8 +167,7 @@ public:
       Box ebox = selectedEntity->box->getBox();
       Box prevBox = ebox;
 
-      EditorDataItem eboxData = {"Entity Box", &ebox, typeid(Box),
-                                 typeid(entityBox)};
+      PropertyData eboxData = {"Entity Box", &ebox};
 
       imguiDataPanel(eboxData);
       if (ebox.position.x != prevBox.position.x ||
@@ -123,28 +180,49 @@ public:
       ImGui::EndChild();
       // EBOXEND
 
-      for (auto data : selectedEntity->get<EditorData>()->data) {
-        ImGui::BeginChild(data.componentType.name(), ImVec2(0, 400),
-                          ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
-        ImGui::Separator();
-        ImGui::Text(data.componentType.name());
-        ImGui::Separator();
+      for (auto [type, component] : selectedEntity->components) {
+        std::string nameWithoutType = getTypeNameWithoutNumbers(type);
 
-        ImGui::BeginChild(std::format("{} Frame", data.name).c_str(),
-                          ImVec2(0, 150),
-                          ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
-        ImGui::Text(data.name.c_str());
+        if (nameWithoutType == "TransformEdit") continue;
+        if (nameWithoutType == "entityBox") continue;
+        if (nameWithoutType == "ClickOnEntityListener") continue;
 
-        imguiDataPanel(data);
+        if (ImGui::CollapsingHeader(nameWithoutType.c_str(),
+                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+          for (PropertyData data : component->propertyRegister) {
+            ImGui::Indent();
+            ImGui::BeginChild(
+                std::format("{} Frame", data.name).c_str(), ImVec2(0, 0),
+                ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
 
-        ImGui::EndChild();
-        ImGui::EndChild();
+            ImGui::Text(data.name.c_str());
+            imguiDataPanel(data);
+
+            ImGui::EndChild();
+            ImGui::Unindent();
+          }
+        }
+      }
+      if (ImGui::BeginCombo("##combo", "Add a Component")) {
+
+        for (auto &[key, component] : GameManager::componentRegistry) {
+          bool isSelected = false;
+          const char *keyc = key.c_str();
+          if (ImGui::Selectable(keyc, &isSelected)) {
+          }
+
+          if (isSelected) {
+            GameManager::componentRegistry[key](selectedEntity);
+          }
+        }
+        ImGui::EndCombo();
       }
     } else {
       ImGui::Text("No entity selected");
     }
     ImGui::EndGroup();
 
+  FRAME_END:
     ImGui::End();
     ImGui::Render();
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
@@ -167,8 +245,12 @@ public:
   const float speed = 100.0f;
 };
 
+class Player;
+
 int main() {
   GameManager::init();
+
+  SetupImGuiStyle();
 
   GameManager::createEntity("$EntitiesPanel")->add<EntitiesPanel>();
   GameManager::createEntity("$CameraMove")->add<CameraMover>();
@@ -196,7 +278,6 @@ int main() {
   for (Entity *entity : GameManager::getAllObjects()) {
     entity->add<ClickOnEntityListener>();
     entity->add<Sprite>()->showBorders = true;
-    entity->add<EditorData>();
   }
 
   GameManager::doUpdateLoop();

@@ -6,9 +6,12 @@ project(index)
 # set the C++ standard to C++11
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-#
+
+set(PROJECT_PATH)
+set(CMAKE_CURRENT_BINARY_DIR ${PROJECT_PATH}/build)
+
 # get all source files
-file(GLOB_RECURSE BOSS_SOURCES src/Bosses/*.cpp)
+file(GLOB_RECURSE Game_SOURCES ${PROJECT_PATH}/src/*.cpp)
 
 file(GLOB_RECURSE CHARLIE_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/source/*.cpp)
 file(GLOB_RECURSE IMGUI_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/imgui/*.cpp)
@@ -17,7 +20,7 @@ if (EMSCRIPTEN)
   add_executable(index
     src/main.cpp
     ${OBJECTS_SOURCES}
-    ${BOSS_SOURCES}
+    ${Game_SOURCES}
     ${CHARLIE_SOURCES}
     ${IMGUI_SOURCES}
   )
@@ -25,6 +28,7 @@ elseif(WIN32)
   add_executable(index
     src/main.cpp
     ${OBJECTS_SOURCES}
+    ${Game_SOURCES}
     ${BOSS_SOURCES}
     ${CHARLIE_SOURCES}
     ${IMGUI_SOURCES}
@@ -32,6 +36,7 @@ elseif(WIN32)
 else()
   add_executable(index
     src/main.cpp
+    ${Game_SOURCES}
     ${OBJECTS_SOURCES}
     ${BOSS_SOURCES}
   )
@@ -46,6 +51,7 @@ endif()
 # add include directories
 target_include_directories(index PUBLIC
     ${sdl2_include_path}
+    ${PROJECT_PATH}/src
     /usr/include/nlohmann
     /usr/local/include/charlie2D
     ${PROJECT_SOURCE_DIR}/include 
