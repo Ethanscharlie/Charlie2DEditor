@@ -5,16 +5,18 @@ project(index)
 
 # set the C++ standard to C++11
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 
 set(PROJECT_PATH)
-set(CMAKE_CURRENT_BINARY_DIR ${PROJECT_PATH}/build)
+set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_BINARY_DIR}/obj)
 
 # get all source files
 file(GLOB_RECURSE Game_SOURCES ${PROJECT_PATH}/src/*.cpp)
 
 file(GLOB_RECURSE CHARLIE_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/source/*.cpp)
 file(GLOB_RECURSE IMGUI_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/imgui/*.cpp)
+
+option(FINAL_BUILD "Final project build" OFF)
 
 if (EMSCRIPTEN) 
   add_executable(index
@@ -40,6 +42,10 @@ else()
     ${OBJECTS_SOURCES}
     ${BOSS_SOURCES}
   )
+endif()
+
+if(FINAL_BUILD)
+  target_compile_definitions(index PRIVATE FINAL_BUILD)
 endif()
 
 if (WIN32) 
@@ -91,7 +97,9 @@ elseif(EMSCRIPTEN)
   # Enable Emscripten-specific flags
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL=2")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -sNO_DISABLE_EXCEPTION_CATCHING")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL_IMAGE=2")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s SDL2_IMAGE_FORMATS=['png']")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL_TTF=2")
@@ -102,7 +110,9 @@ elseif(EMSCRIPTEN)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s EXPORTED_FUNCTIONS=\"['_main', '_on_resize']\"")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --use-preload-plugins")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --shell-file ../minimal.html")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --preload-file ${CMAKE_SOURCE_DIR}/img@/img")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --preload-file ${PROJECT_PATH}/img@/img")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --preload-file ${PROJECT_PATH}/Project.ch2dscene@/Project.ch2dscene")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fexperimental-library")
 else()
   # link libraries
   target_link_libraries(index
@@ -115,7 +125,10 @@ else()
 endif()
 
 # copy image directory to build directory
-file(COPY ${CMAKE_SOURCE_DIR}/img DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${PROJECT_PATH}/img DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${PROJECT_PATH}/Project.ch2dscene DESTINATION ${CMAKE_BINARY_DIR})
+
+ADD_DEFINITIONS( -D_PROJECT_PATH=\"${PROJECT_PATH}\")
 
 # set output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

@@ -1,6 +1,5 @@
 #pragma once
 #include "Charlie2D.h"
-#include <algorithm>
 
 class TransformEdit : public Component {
 public:
@@ -19,10 +18,10 @@ public:
   void update(float deltaTime) override {
     if (busyHorizontalScale) {
       horizontalScaleButton->get<entityBox>()->setWithCenter(
-          {InputManager::getMouseUIPosition().x,
+          {InputManager::getMouseWorldPosition().x,
            horizontalScaleButton->get<entityBox>()->getBox().getCenter().y});
       entity->get<entityBox>()->setScale(
-          {ogSize.x + InputManager::getMouseUIPosition().x -
+          {ogSize.x + InputManager::getMouseWorldPosition().x -
                horizontalScaleStartPos.x,
            ogSize.y});
 
@@ -36,9 +35,9 @@ public:
     if (busyverticalScale) {
       verticalScaleButton->get<entityBox>()->setWithCenter(
           {verticalScaleButton->get<entityBox>()->getBox().getCenter().x,
-           InputManager::getMouseUIPosition().y});
+           InputManager::getMouseWorldPosition().y});
       entity->get<entityBox>()->setScale(
-          {ogSize.x, ogSize.y + InputManager::getMouseUIPosition().y -
+          {ogSize.x, ogSize.y + InputManager::getMouseWorldPosition().y -
                          verticalScaleStartPos.y});
 
       if (!InputManager::mouseHeld) {
@@ -50,16 +49,14 @@ public:
   }
 
   void createMoveButton() {
-    // entity->remove<UISliceRenderer>();
     moveButton = GameManager::createEntity("$TransformEditMoveButton");
     moveButton->setParent(entity);
     entityBox &box = *moveButton->get<entityBox>();
     box.anchor = 4;
-    box.setScale({70, 70});
+    box.setScale({50, 50});
     box.setLocalWithCenter({0, 0});
     moveButton->add<UISliceRenderer>()->rendererInWorld = true;
-    //
-    // moveButton->add<UISliceRenderer>()->rendererInWorld = false;
+    moveButton->get<UISliceRenderer>()->alpha = 120;
     moveButton->add<UISliceRenderer>()->setColor({0, 0, 255});
     Button &button = *moveButton->add<Button>();
     button.checkInWorld = true;
@@ -69,7 +66,7 @@ public:
       if (busyverticalScale)
         return;
       entity->get<entityBox>()->setWithCenter(
-          InputManager::getMouseUIPosition());
+          InputManager::getMouseWorldPosition());
     };
 
     moveButton->layer = 90;
@@ -83,14 +80,14 @@ public:
     box.setScale({50, 50});
     box.setLocalWithCenter(horizontalScalePosition);
     horizontalScaleButton->add<UISliceRenderer>()->rendererInWorld = true;
+    horizontalScaleButton->get<UISliceRenderer>()->alpha = 120;
 
-    // horizontalScaleButton->add<UISliceRenderer>()->rendererInWorld = false;
     horizontalScaleButton->add<UISliceRenderer>()->setColor({255, 0, 0});
     Button &button = *horizontalScaleButton->add<Button>();
     button.checkInWorld = true;
     button.onClick = [this]() {
       ogSize = entity->get<entityBox>()->getSize();
-      horizontalScaleStartPos = InputManager::getMouseUIPosition();
+      horizontalScaleStartPos = InputManager::getMouseWorldPosition();
       busyHorizontalScale = true;
     };
 
@@ -106,13 +103,13 @@ public:
     box.setScale({50, 50});
     box.setLocalWithCenter(verticalScalePosition);
 
-    // verticalScaleButton->add<UISliceRenderer>()->rendererInWorld = false;
     verticalScaleButton->add<UISliceRenderer>()->setColor({0, 255, 0});
+    verticalScaleButton->get<UISliceRenderer>()->alpha = 120;
     Button &button = *verticalScaleButton->add<Button>();
     button.checkInWorld = true;
     button.onClick = [this]() {
       ogSize = entity->get<entityBox>()->getSize();
-      verticalScaleStartPos = InputManager::getMouseUIPosition();
+      verticalScaleStartPos = InputManager::getMouseWorldPosition();
       busyverticalScale = true;
     };
 

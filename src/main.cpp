@@ -1,28 +1,63 @@
-#include "Camera.h"
 #include "Charlie2D.h"
+#include "imguiDataPanels.h"
+#include "include_tmp.h"
+
+#define PROJECT_PATH _PROJECT_PATH
+
+#ifdef FINAL_BUILD
+
+int main(int argc, char *argv[]) {
+  projectFolderpath = PROJECT_PATH;
+  projectFilepath =
+      std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
+
+  GameManager::init();
+
+  std::cout << "Hello World\n";
+
+  std::ifstream file("Project.ch2dscene");
+  json jsonData = json::parse(file);
+  file.close();
+
+  std::cout << std::setw(2) << jsonData << std::endl;
+
+  for (json entityGroup : jsonData["Scene"]) {
+    for (json entityJson : entityGroup) {
+      Entity *dentity = deserialize(entityJson);
+
+      for (auto &[type, component] : dentity->components) {
+        component->start();
+      }
+    }
+  }
+
+  GameManager::doUpdateLoop();
+  return 0;
+}
+
+#else
 #include "Component.h"
 #include "Entity.h"
 #include "ExtendedComponent.h"
 #include "GameManager.h"
+#include "ImGuiFileDialog.h"
 #include "InputManager.h"
 #include "LDTKEntity.h"
 #include "Serializer.h"
 #include "Vector2f.h"
 #include "imgui.h"
 #include "move.h"
-#include <any>
 #include <cstdlib>
 #include <format>
 #include <fstream>
 #include <string>
 #include <typeindex>
 
-#include "imguiDataPanels.h"
 #include "imguiTheme.h"
 
-#include "include_tmp.h"
-
 Entity *selectedEntity = nullptr;
+json editorTempRunSave;
+bool inRunState = false;
 
 json serializeAllEntities() {
   json entitiesListJson;
@@ -33,6 +68,12 @@ json serializeAllEntities() {
   }
 
   return entitiesListJson;
+}
+
+void writePrevProject() {
+  std::ofstream file("../prevProject.txt");
+  file << projectFolderpath << std::endl;
+  file.close();
 }
 
 void changeSelectedEntity(Entity *entity) {
@@ -82,38 +123,144 @@ public:
         if (ImGui::MenuItem("Recompile")) {
           std::exit(42);
         }
-        if (ImGui::MenuItem("Save")) {
+        if (ImGui::MenuItem("New")) {
+          IGFD::FileDialogConfig config;
+          config.path = projectFolderpath;
+          ImGuiFileDialog::Instance()->OpenDialog("NewProject", "Choose Folder",
+                                                  nullptr, config);
+        }
+        if (ImGui::MenuItem("Save") && !inRunState) {
           json jsonData = serializeAllEntities();
 
-          std::ofstream file("../Project.ch2dscene");
+          std::ofstream file(projectFilepath);
           file << std::setw(2) << jsonData << std::endl;
           file.close();
         }
-        if (ImGui::MenuItem("Open")) {
-          std::ifstream file("../Project.ch2dscene");
-          json jsonData = json::parse(file);
-          file.close();
-
-          std::cout << std::setw(2) << jsonData << std::endl;
-
-          selectedEntity = nullptr;
-          for (Entity *entity : GameManager::getAllObjects()) {
-            if (entity->tag[0] == '$')
-              continue;
-            entity->toDestroy = true;
-          }
-          for (json entityGroup : jsonData["Scene"]) {
-            for (json entityJson : entityGroup) {
-              deserialize(entityJson);
-            }
-          }
+        if (ImGui::MenuItem("Open") && !inRunState) {
+          IGFD::FileDialogConfig config;
+          config.path = projectFolderpath;
+          ImGuiFileDialog::Instance()->OpenDialog(
+              "ChooseProject", "Choose File", ".ch2dscene", config);
         }
         if (ImGui::MenuItem("Exit")) {
           std::exit(1);
         }
         ImGui::EndMenu();
       }
+
+      if (ImGui::BeginMenu("Play")) {
+        if (ImGui::MenuItem("Run")) {
+          if (!inRunState) {
+            inRunState = true;
+            selectedEntity = nullptr;
+            editorTempRunSave = serializeAllEntities();
+
+            for (Entity *dentity : GameManager::getAllObjects()) {
+              if (dentity->tag[0] == '$')
+                continue;
+              for (auto &[type, component] : dentity->components) {
+                component->start();
+                component->standardUpdate = true;
+              }
+            }
+          }
+        }
+        if (ImGui::MenuItem("Stop")) {
+          if (inRunState) {
+            inRunState = false;
+            selectedEntity = nullptr;
+            for (Entity *entity : GameManager::getAllObjects()) {
+              if (entity->tag[0] == '$')
+                continue;
+              entity->toDestroy = true;
+            }
+            for (json entityGroup : editorTempRunSave["Scene"]) {
+              for (json entityJson : entityGroup) {
+                Entity *dentity = deserialize(entityJson);
+
+                for (auto &[type, component] : dentity->components) {
+                  if (!component->typeIsRendering)
+                    component->standardUpdate = false;
+                }
+              }
+            }
+          }
+        }
+        ImGui::EndMenu();
+      }
+
       ImGui::EndMainMenuBar();
+    }
+
+    if (ImGuiFileDialog::Instance()->Display(
+            "NewProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        projectFolderpath = std::filesystem::path(
+                                ImGuiFileDialog::Instance()->GetCurrentPath()) /
+                            "Project";
+        projectFilepath =
+            std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
+
+        std::filesystem::create_directory(projectFolderpath);
+
+        std::filesystem::create_directory(
+            std::filesystem::path(projectFolderpath) / "img");
+        std::filesystem::create_directory(
+            std::filesystem::path(projectFolderpath) / "src");
+
+        json jsonData;
+        jsonData["Scene"];
+        std::ofstream file(projectFilepath);
+        file << std::setw(2) << jsonData << std::endl;
+        file.close();
+
+        for (Entity *entity : GameManager::getAllObjects()) {
+          if (entity->tag[0] == '$')
+            continue;
+          entity->toDestroy = true;
+        }
+
+        writePrevProject();
+      }
+
+      ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGuiFileDialog::Instance()->Display(
+            "ChooseProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        projectFilepath =
+            std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
+
+        std::ifstream file(projectFilepath);
+        json jsonData = json::parse(file);
+        file.close();
+
+        std::cout << std::setw(2) << jsonData << std::endl;
+
+        selectedEntity = nullptr;
+        for (Entity *entity : GameManager::getAllObjects()) {
+          if (entity->tag[0] == '$')
+            continue;
+          entity->toDestroy = true;
+        }
+        for (json entityGroup : jsonData["Scene"]) {
+          for (json entityJson : entityGroup) {
+            Entity *dentity = deserialize(entityJson);
+
+            for (auto &[type, component] : dentity->components) {
+              if (!component->typeIsRendering)
+                component->standardUpdate = false;
+            }
+          }
+        }
+
+        writePrevProject();
+      }
+
+      // close
+      ImGuiFileDialog::Instance()->Close();
     }
 
     if (ImGui::Button("Create")) {
@@ -127,11 +274,12 @@ public:
     auto all = GameManager::getAllObjects();
     for (auto it = all.begin(); it != all.end(); it++) {
       Entity *entity = *it;
-      const std::string &tag =
-          std::format("{} {}", entity->tag, std::to_string(elementIndex));
 
-      if (tag[0] == '$')
+      if (entity->tag[0] == '$')
         continue;
+
+      const std::string &tag =
+          std::format("{} {}", std::to_string(elementIndex), entity->tag);
 
       elementIndex++;
       if (ImGui::Selectable(tag.c_str(), selectedEntity == entity)) {
@@ -145,9 +293,7 @@ public:
     ImGui::BeginGroup();
     if (selectedEntity != nullptr) {
       Box box = selectedEntity->box->getBox();
-      ImGui::Text(selectedEntity->tag.c_str());
 
-      ImGui::SameLine();
       if (ImGui::Button("Destroy")) {
         selectedEntity->toDestroy = true;
         selectedEntity = nullptr;
@@ -155,9 +301,23 @@ public:
         goto FRAME_END;
       }
 
-      ImGui::Text(std::format("Center {}, {}\nSize {}, {}", box.getCenter().x,
-                              box.getCenter().y, box.size.x, box.size.y)
-                      .c_str());
+      ImGui::SameLine();
+
+      if (ImGui::Button("Duplicate")) {
+        json jsonData = serialize(selectedEntity);
+        deserialize(jsonData);
+      }
+
+      ImGui::Text(
+          std::format("Center {}, {}", box.getCenter().x, box.getCenter().y)
+              .c_str());
+
+      std::string ctag = selectedEntity->tag;
+      std::string prevTag = ctag;
+      ImGui::InputString("##entitytag", &ctag);
+      if (ctag != prevTag) {
+        selectedEntity->changeTag(ctag);
+      }
 
       // ENTIY BOX
       ImGui::BeginChild("Entity Box Frame", ImVec2(0, 150),
@@ -183,12 +343,23 @@ public:
       for (auto [type, component] : selectedEntity->components) {
         std::string nameWithoutType = getTypeNameWithoutNumbers(type);
 
-        if (nameWithoutType == "TransformEdit") continue;
-        if (nameWithoutType == "entityBox") continue;
-        if (nameWithoutType == "ClickOnEntityListener") continue;
+        if (nameWithoutType == "TransformEdit")
+          continue;
+        if (nameWithoutType == "entityBox")
+          continue;
+        if (nameWithoutType == "ClickOnEntityListener")
+          continue;
 
         if (ImGui::CollapsingHeader(nameWithoutType.c_str(),
                                     ImGuiTreeNodeFlags_DefaultOpen)) {
+          if (ImGui::Button(
+                  std::format("Remove### {} ComponentRemove", type.name())
+                      .c_str())) {
+            selectedEntity->remove(type);
+            ImGui::EndGroup();
+            goto FRAME_END;
+          }
+
           for (PropertyData data : component->propertyRegister) {
             ImGui::Indent();
             ImGui::BeginChild(
@@ -212,7 +383,10 @@ public:
           }
 
           if (isSelected) {
-            GameManager::componentRegistry[key](selectedEntity);
+            Component *component =
+                GameManager::componentRegistry[key](selectedEntity);
+            if (!component->typeIsRendering)
+              component->standardUpdate = false;
           }
         }
         ImGui::EndCombo();
@@ -238,48 +412,45 @@ public:
 class CameraMover : public ExtendedComponent {
 public:
   void update() override {
-    Camera::position +=
-        InputManager::checkAxis() * speed * GameManager::deltaTime;
+    if (!inRunState) {
+      Camera::position +=
+          InputManager::checkAxis() * speed * GameManager::deltaTime;
+    }
   }
 
-  const float speed = 100.0f;
+  const float speed = 400.0f;
 };
 
-class Player;
+int main(int argc, char *argv[]) {
+  projectFolderpath = PROJECT_PATH;
+  projectFilepath =
+      std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
-int main() {
   GameManager::init();
 
   SetupImGuiStyle();
 
   GameManager::createEntity("$EntitiesPanel")->add<EntitiesPanel>();
   GameManager::createEntity("$CameraMove")->add<CameraMover>();
+  std::ifstream file(projectFilepath);
+  json jsonData = json::parse(file);
+  file.close();
 
-  Entity *player = GameManager::createEntity("Player");
-  player->add<Sprite>()->loadTexture("img/duck.png");
-  player->get<entityBox>()->setWithCenter({0, 0});
-  player->useLayer = true;
-  player->layer = 5;
-  player->add<Player>();
+  std::cout << std::setw(2) << jsonData << std::endl;
 
-  Entity *background = GameManager::createEntity("Background");
-  background->add<Sprite>()->loadTexture("img/backgroundwall.png");
-  background->get<entityBox>()->setWithCenter({0, 0});
-  background->get<entityBox>()->setScale(GameManager::gameWindowSize);
-  background->useLayer = true;
-  background->layer = -10;
+  for (json entityGroup : jsonData["Scene"]) {
+    for (json entityJson : entityGroup) {
+      Entity *dentity = deserialize(entityJson);
 
-  Entity *gun = GameManager::createEntity("Gun");
-  gun->box->setScale({10, 10});
-
-  Entity *enemy = GameManager::createEntity("Enemy");
-  enemy->box->setScale({20, 20});
-
-  for (Entity *entity : GameManager::getAllObjects()) {
-    entity->add<ClickOnEntityListener>();
-    entity->add<Sprite>()->showBorders = true;
+      for (auto &[type, component] : dentity->components) {
+        if (!component->typeIsRendering)
+          component->standardUpdate = false;
+      }
+    }
   }
 
   GameManager::doUpdateLoop();
   return 0;
 }
+
+#endif
