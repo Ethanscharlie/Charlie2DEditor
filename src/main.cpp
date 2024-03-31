@@ -21,17 +21,7 @@ int main(int argc, char *argv[]) {
   json jsonData = json::parse(file);
   file.close();
 
-  std::cout << std::setw(2) << jsonData << std::endl;
-
-  for (json entityGroup : jsonData["Scene"]) {
-    for (json entityJson : entityGroup) {
-      Entity *dentity = deserialize(entityJson);
-
-      for (auto &[type, component] : dentity->components) {
-        component->start();
-      }
-    }
-  }
+  deserializeList(jsonData, true);
 
   GameManager::doUpdateLoop();
   return 0;
@@ -89,30 +79,6 @@ void changeSelectedEntity(Entity *entity) {
   selectedEntity->add<TransformEdit>();
 }
 
-void makeEntitySelectabe(Entity *entity) {
-  ImGui::SameLine();
-  std::string text = std::format("{} ({})", entity->tag, entity->iid);
-  if (ImGui::Selectable(text.c_str(), entity == selectedEntity)) {
-    changeSelectedEntity(entity);
-  }
-}
-
-void makeEntityTreeNode(Entity *entity) {
-  if (entity->tag[0] == '$')
-    return;
-
-  if (ImGui::TreeNode(std::format("###treelabel{}", entity->iid).c_str())) {
-    makeEntitySelectabe(entity);
-    for (Entity *child : entity->getChildren()) {
-      makeEntityTreeNode(child);
-      usedChildren.push_back(child);
-    }
-    ImGui::TreePop();
-  } else {
-    makeEntitySelectabe(entity);
-  }
-}
-
 class ClickOnEntityListener : public ExtendedComponent {
 public:
   void update() override {
@@ -133,34 +99,57 @@ public:
     entity->layer = 100;
   }
 
-  void collectChildren(Entity *entity) {
-    if (entity->getParent() != nullptr) {
-      usedChildren.push_back(entity);
+  void makeEntityList() {
+    ImGui::BeginChild("Items", ImVec2(150, 0),
+                      ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
+
+    std::map<std::string, std::map<std::string, std::vector<Entity *>>>
+        entitiesWithGroups;
+
+    for (auto [tag, entityList] : GameManager::entities) {
+      if (tag[0] == '$')
+        continue;
+      if (entityList.size() <= 0)
+        continue;
+
+      for (Entity *entity : entityList) {
+        entitiesWithGroups[tag][entity->group].push_back(entity);
+      }
     }
-    for (Entity *child : entity->getChildren()) {
-      collectChildren(child);
+
+    for (auto [tag, groups] : entitiesWithGroups) {
+      if (ImGui::TreeNodeEx(tag.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+        for (auto [group, entities] : groups) {
+          if (group != "") {
+            if (ImGui::TreeNodeEx(group.c_str(),
+                                  ImGuiTreeNodeFlags_DefaultOpen)) {
+              for (Entity *entity : entities) {
+                std::string text =
+                    std::format("{} ({})", entity->name, entity->iid);
+                if (ImGui::Selectable(text.c_str(), entity == selectedEntity)) {
+                  changeSelectedEntity(entity);
+                }
+              }
+              ImGui::TreePop();
+            }
+          } else {
+            for (Entity *entity : entities) {
+              std::string text =
+                  std::format("{} ({})", entity->name, entity->iid);
+              if (ImGui::Selectable(text.c_str(), entity == selectedEntity)) {
+                changeSelectedEntity(entity);
+              }
+            }
+          }
+        }
+        ImGui::TreePop();
+      }
     }
+
+    ImGui::EndChild();
   }
 
-  void update() override {
-    SDL_RenderSetLogicalSize(GameManager::renderer,
-                             GameManager::currentWindowSize.x,
-                             GameManager::currentWindowSize.y);
-
-    // ImGui_ImplSDLRenderer2_NewFrame();
-    // ImGui_ImplSDL2_NewFrame();
-    // ImGui::NewFrame();
-    // ImGui::ShowDemoWindow();
-    // ImGui::Render();
-    // ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
-
-    ImGui_ImplSDLRenderer2_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-
-    ImGui::NewFrame();
-    ImGui::SetNextWindowSize(ImVec2(600, 1000), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Entities");
-
+  void makeMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Recompile")) {
@@ -222,16 +211,7 @@ public:
                 continue;
               entity->toDestroy = true;
             }
-            for (json entityGroup : editorTempRunSave["Scene"]) {
-              for (json entityJson : entityGroup) {
-                Entity *dentity = deserialize(entityJson);
-
-                for (auto &[type, component] : dentity->components) {
-                  if (!component->typeIsRendering)
-                    component->standardUpdate = false;
-                }
-              }
-            }
+            deserializeList(editorTempRunSave, false);
           }
         }
         ImGui::EndMenu();
@@ -239,6 +219,28 @@ public:
 
       ImGui::EndMainMenuBar();
     }
+  }
+
+  void update() override {
+    SDL_RenderSetLogicalSize(GameManager::renderer,
+                             GameManager::currentWindowSize.x,
+                             GameManager::currentWindowSize.y);
+
+    // ImGui_ImplSDLRenderer2_NewFrame();
+    // ImGui_ImplSDL2_NewFrame();
+    // ImGui::NewFrame();
+    // ImGui::ShowDemoWindow();
+    // ImGui::Render();
+    // ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+
+    ImGui_ImplSDLRenderer2_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+
+    ImGui::NewFrame();
+    ImGui::SetNextWindowSize(ImVec2(600, 1000), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Entities");
+
+    makeMenuBar();
 
     if (ImGuiFileDialog::Instance()->Display(
             "NewProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
@@ -293,16 +295,7 @@ public:
             continue;
           entity->toDestroy = true;
         }
-        for (json entityGroup : jsonData["Scene"]) {
-          for (json entityJson : entityGroup) {
-            Entity *dentity = deserialize(entityJson);
-
-            for (auto &[type, component] : dentity->components) {
-              if (!component->typeIsRendering)
-                component->standardUpdate = false;
-            }
-          }
-        }
+        deserializeList(jsonData, false);
 
         writePrevProject();
       }
@@ -315,46 +308,29 @@ public:
       GameManager::createEntity("New Entity");
     }
 
-    // Full entity list
-    ImGui::BeginChild("Items", ImVec2(150, 0),
-                      ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
-
-    int elementIndex = 0;
-    auto all = GameManager::getAllObjects();
-    usedChildren.clear();
-
-    for (Entity *entity : all) {
-      collectChildren(entity);
-    }
-
-    for (auto it = all.begin(); it != all.end(); it++) {
-      Entity *entity = *it;
-
-      if (entity->tag[0] == '$')
-        continue;
-      if (std::find(usedChildren.begin(), usedChildren.end(), entity) !=
-          usedChildren.end())
-        continue;
-
-      const std::string &tag = std::format("{} ({})", entity->tag, entity->iid);
-
-      elementIndex++;
-      makeEntityTreeNode(entity);
-    }
-
-    ImGui::EndChild();
+    makeEntityList();
 
     ImGui::SameLine();
     ImGui::BeginGroup();
     if (selectedEntity != nullptr) {
       Box box = selectedEntity->box->getBox();
 
+      ImGui::Text("Name");
+      ImGui::SameLine();
+      ImGui::InputString("##entityname", &selectedEntity->name);
+
+      ImGui::Text("Tag");
+      ImGui::SameLine();
       std::string ctag = selectedEntity->tag;
       std::string prevTag = ctag;
       ImGui::InputString("##entitytag", &ctag);
       if (ctag != prevTag) {
         selectedEntity->changeTag(ctag);
       }
+
+      ImGui::Text("Group");
+      ImGui::SameLine();
+      ImGui::InputString("##entitygroup", &selectedEntity->group);
 
       if (ImGui::Button("Destroy")) {
         selectedEntity->toDestroy = true;
@@ -367,7 +343,15 @@ public:
 
       if (ImGui::Button("Duplicate")) {
         json jsonData = serialize(selectedEntity);
-        deserialize(jsonData);
+        Entity *dentity = deserialize(jsonData);
+
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist(
+            1, 100000); //
+        dentity->iid = dist(rng);
+
+        changeSelectedEntity(dentity);
       }
 
       ImGui::InputInt("Layer###EntityLayerInput", &selectedEntity->layer);
@@ -375,47 +359,6 @@ public:
       ImGui::Text(
           std::format("Center {}, {}", box.getCenter().x, box.getCenter().y)
               .c_str());
-
-      std::string parentName;
-      if (selectedEntity->getParent() != nullptr) {
-        parentName = selectedEntity->getParent()->tag;
-      } else {
-        parentName = "Select a Parent";
-      }
-
-      if (ImGui::BeginCombo("##comboparent", parentName.c_str())) {
-        int i = 0;
-        for (Entity *otherEntity : GameManager::getAllObjects()) {
-          if (otherEntity == selectedEntity)
-            continue;
-          if (otherEntity->tag[0] == '$')
-            continue;
-
-          bool isChild = false;
-          for (Entity *child : selectedEntity->getChildren()) {
-            if (child == otherEntity) {
-              isChild = true;
-              break;
-            }
-          }
-          if (isChild)
-            continue;
-
-          bool isSelected = false;
-          std::string otherTag =
-              std::format("{} ({})", otherEntity->tag, otherEntity->iid);
-          const char *keyc = otherTag.c_str();
-          if (ImGui::Selectable(keyc, &isSelected)) {
-          }
-
-          if (isSelected) {
-            selectedEntity->setParent(otherEntity);
-          }
-
-          i++;
-        }
-        ImGui::EndCombo();
-      }
 
       // ENTIY BOX
       ImGui::BeginChild("Entity Box Frame", ImVec2(0, 150),
@@ -536,16 +479,7 @@ int main(int argc, char *argv[]) {
 
   std::cout << std::setw(2) << jsonData << std::endl;
 
-  for (json entityGroup : jsonData["Scene"]) {
-    for (json entityJson : entityGroup) {
-      Entity *dentity = deserialize(entityJson);
-
-      for (auto &[type, component] : dentity->components) {
-        if (!component->typeIsRendering)
-          component->standardUpdate = false;
-      }
-    }
-  }
+  deserializeList(jsonData, false);
 
   GameManager::doUpdateLoop();
   return 0;
