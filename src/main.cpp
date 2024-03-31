@@ -1,6 +1,8 @@
 #include "Charlie2D.h"
 #include "imguiDataPanels.h"
 #include "include_tmp.h"
+#include <sstream>
+#include <vector>
 
 #define PROJECT_PATH _PROJECT_PATH
 
@@ -58,6 +60,7 @@ int main(int argc, char *argv[]) {
 Entity *selectedEntity = nullptr;
 json editorTempRunSave;
 bool inRunState = false;
+std::vector<Entity *> usedChildren;
 
 json serializeAllEntities() {
   json entitiesListJson;
@@ -86,6 +89,30 @@ void changeSelectedEntity(Entity *entity) {
   selectedEntity->add<TransformEdit>();
 }
 
+void makeEntitySelectabe(Entity *entity) {
+  ImGui::SameLine();
+  std::string text = std::format("{} ({})", entity->tag, entity->iid);
+  if (ImGui::Selectable(text.c_str(), entity == selectedEntity)) {
+    changeSelectedEntity(entity);
+  }
+}
+
+void makeEntityTreeNode(Entity *entity) {
+  if (entity->tag[0] == '$')
+    return;
+
+  if (ImGui::TreeNode(std::format("###treelabel{}", entity->iid).c_str())) {
+    makeEntitySelectabe(entity);
+    for (Entity *child : entity->getChildren()) {
+      makeEntityTreeNode(child);
+      usedChildren.push_back(child);
+    }
+    ImGui::TreePop();
+  } else {
+    makeEntitySelectabe(entity);
+  }
+}
+
 class ClickOnEntityListener : public ExtendedComponent {
 public:
   void update() override {
@@ -106,10 +133,26 @@ public:
     entity->layer = 100;
   }
 
+  void collectChildren(Entity *entity) {
+    if (entity->getParent() != nullptr) {
+      usedChildren.push_back(entity);
+    }
+    for (Entity *child : entity->getChildren()) {
+      collectChildren(child);
+    }
+  }
+
   void update() override {
     SDL_RenderSetLogicalSize(GameManager::renderer,
                              GameManager::currentWindowSize.x,
                              GameManager::currentWindowSize.y);
+
+    // ImGui_ImplSDLRenderer2_NewFrame();
+    // ImGui_ImplSDL2_NewFrame();
+    // ImGui::NewFrame();
+    // ImGui::ShowDemoWindow();
+    // ImGui::Render();
+    // ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
 
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -153,6 +196,11 @@ public:
           if (!inRunState) {
             inRunState = true;
             selectedEntity = nullptr;
+            for (TransformEdit *component :
+                 GameManager::getComponents<TransformEdit>()) {
+              component->entity->remove<TransformEdit>();
+            }
+
             editorTempRunSave = serializeAllEntities();
 
             for (Entity *dentity : GameManager::getAllObjects()) {
@@ -267,24 +315,31 @@ public:
       GameManager::createEntity("New Entity");
     }
 
+    // Full entity list
     ImGui::BeginChild("Items", ImVec2(150, 0),
                       ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
 
     int elementIndex = 0;
     auto all = GameManager::getAllObjects();
+    usedChildren.clear();
+
+    for (Entity *entity : all) {
+      collectChildren(entity);
+    }
+
     for (auto it = all.begin(); it != all.end(); it++) {
       Entity *entity = *it;
 
       if (entity->tag[0] == '$')
         continue;
+      if (std::find(usedChildren.begin(), usedChildren.end(), entity) !=
+          usedChildren.end())
+        continue;
 
-      const std::string &tag =
-          std::format("{} {}", std::to_string(elementIndex), entity->tag);
+      const std::string &tag = std::format("{} ({})", entity->tag, entity->iid);
 
       elementIndex++;
-      if (ImGui::Selectable(tag.c_str(), selectedEntity == entity)) {
-        changeSelectedEntity(entity);
-      }
+      makeEntityTreeNode(entity);
     }
 
     ImGui::EndChild();
@@ -293,6 +348,13 @@ public:
     ImGui::BeginGroup();
     if (selectedEntity != nullptr) {
       Box box = selectedEntity->box->getBox();
+
+      std::string ctag = selectedEntity->tag;
+      std::string prevTag = ctag;
+      ImGui::InputString("##entitytag", &ctag);
+      if (ctag != prevTag) {
+        selectedEntity->changeTag(ctag);
+      }
 
       if (ImGui::Button("Destroy")) {
         selectedEntity->toDestroy = true;
@@ -308,15 +370,51 @@ public:
         deserialize(jsonData);
       }
 
+      ImGui::InputInt("Layer###EntityLayerInput", &selectedEntity->layer);
+
       ImGui::Text(
           std::format("Center {}, {}", box.getCenter().x, box.getCenter().y)
               .c_str());
 
-      std::string ctag = selectedEntity->tag;
-      std::string prevTag = ctag;
-      ImGui::InputString("##entitytag", &ctag);
-      if (ctag != prevTag) {
-        selectedEntity->changeTag(ctag);
+      std::string parentName;
+      if (selectedEntity->getParent() != nullptr) {
+        parentName = selectedEntity->getParent()->tag;
+      } else {
+        parentName = "Select a Parent";
+      }
+
+      if (ImGui::BeginCombo("##comboparent", parentName.c_str())) {
+        int i = 0;
+        for (Entity *otherEntity : GameManager::getAllObjects()) {
+          if (otherEntity == selectedEntity)
+            continue;
+          if (otherEntity->tag[0] == '$')
+            continue;
+
+          bool isChild = false;
+          for (Entity *child : selectedEntity->getChildren()) {
+            if (child == otherEntity) {
+              isChild = true;
+              break;
+            }
+          }
+          if (isChild)
+            continue;
+
+          bool isSelected = false;
+          std::string otherTag =
+              std::format("{} ({})", otherEntity->tag, otherEntity->iid);
+          const char *keyc = otherTag.c_str();
+          if (ImGui::Selectable(keyc, &isSelected)) {
+          }
+
+          if (isSelected) {
+            selectedEntity->setParent(otherEntity);
+          }
+
+          i++;
+        }
+        ImGui::EndCombo();
       }
 
       // ENTIY BOX
