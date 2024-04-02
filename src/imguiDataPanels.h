@@ -11,6 +11,8 @@ std::string projectFilepath = _PROJECT_PATH;
 std::string projectFolderpath =
     std::filesystem::path(projectFilepath).parent_path();
 
+Entity *selectedEntity = nullptr;
+
 namespace ImGui {
 bool InputString(const char *label, std::string *strPtr,
                  size_t bufferSize = 256, ImGuiInputTextFlags flags = 0) {
@@ -157,6 +159,43 @@ void imguiDataPanel(PropertyData data) {
       std::cout << "New Font\n";
       Font newFont = Font(fontPath, font->size);
       *font = newFont;
+    }
+  }
+
+  else if (data.type == typeid(Entity *)) {
+    Entity **entityPtr = static_cast<Entity **>(data.value);
+    Entity *entity = *entityPtr;
+
+    std::string entityName;
+    if (entity != nullptr) {
+      entityName = std::format("{} ({})", entity->name, entity->iid);
+    } else {
+      entityName = "Select an Entity";
+    }
+
+    if (ImGui::BeginCombo(std::format("###{}entitySelect", data.name).c_str(),
+                          entityName.c_str())) {
+      int i = 0;
+      for (Entity *otherEntity : GameManager::getAllObjects()) {
+        if (otherEntity == selectedEntity)
+          continue;
+        if (otherEntity->tag[0] == '$')
+          continue;
+
+        bool isSelected = false;
+        std::string otherTag =
+            std::format("{} ({})", otherEntity->name, otherEntity->iid);
+        const char *keyc = otherTag.c_str();
+        if (ImGui::Selectable(keyc, &isSelected)) {
+        }
+
+        if (isSelected) {
+          *entityPtr = otherEntity;
+        }
+
+        i++;
+      }
+      ImGui::EndCombo();
     }
   }
 }

@@ -1,7 +1,7 @@
 #include "Charlie2D.h"
 #include "imguiDataPanels.h"
 #include "include_tmp.h"
-#include <sstream>
+#include <filesystem>
 #include <vector>
 
 #define PROJECT_PATH _PROJECT_PATH
@@ -14,8 +14,6 @@ int main(int argc, char *argv[]) {
       std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
   GameManager::init();
-
-  std::cout << "Hello World\n";
 
   std::ifstream file("Project.ch2dscene");
   json jsonData = json::parse(file);
@@ -47,7 +45,6 @@ int main(int argc, char *argv[]) {
 
 #include "imguiTheme.h"
 
-Entity *selectedEntity = nullptr;
 json editorTempRunSave;
 bool inRunState = false;
 std::vector<Entity *> usedChildren;
@@ -97,6 +94,26 @@ public:
   void start() override {
     entity->useLayer = true;
     entity->layer = 100;
+  }
+
+  void removeFolderContents(const std::string &folder) {
+    for (const auto &entry : std::filesystem::directory_iterator(folder)) {
+      if (entry.is_regular_file()) {
+        std::filesystem::remove(entry.path());
+      } else if (entry.is_directory()) {
+        removeFolderContents(entry.path().string());
+        std::filesystem::remove(entry.path());
+      }
+    }
+  }
+
+  void refreshAssets() {
+    removeFolderContents("img");
+
+    for (const auto &entry : std::filesystem::directory_iterator(
+             std::filesystem::path(projectFolderpath) / "img")) {
+      std::filesystem::copy(entry.path(), "img" / entry.path().filename());
+    }
   }
 
   void makeEntityList() {
@@ -154,6 +171,9 @@ public:
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Recompile")) {
           std::exit(42);
+        }
+        if (ImGui::MenuItem("Refresh Assets")) {
+          refreshAssets();
         }
         if (ImGui::MenuItem("New")) {
           IGFD::FileDialogConfig config;
@@ -218,6 +238,53 @@ public:
       }
 
       ImGui::EndMainMenuBar();
+    }
+  }
+
+  void makeTopRowButtons() {
+    if (ImGui::Button("Destroy")) {
+      selectedEntity->toDestroy = true;
+      selectedEntity = nullptr;
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Duplicate")) {
+      json jsonData = serialize(selectedEntity);
+      Entity *dentity = deserialize(jsonData);
+
+      std::random_device dev;
+      std::mt19937 rng(dev());
+      std::uniform_int_distribution<std::mt19937::result_type> dist(1,
+                                                                    100000); //
+      dentity->iid = dist(rng);
+
+      changeSelectedEntity(dentity);
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Make Prefab")) {
+      IGFD::FileDialogConfig config;
+      config.path = projectFolderpath;
+      ImGuiFileDialog::Instance()->OpenDialog("MakePrefab", "Choose File",
+                                              ".ch2dscene", config);
+    }
+
+    if (ImGuiFileDialog::Instance()->Display(
+            "MakePrefab", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        std::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+        std::cout << filepath << "\n";
+
+        json jsonData = serialize(selectedEntity);
+        std::ofstream file(filepath);
+        file << std::setw(2) << jsonData << std::endl;
+        file.close();
+      }
+
+      // close
+      ImGuiFileDialog::Instance()->Close();
     }
   }
 
@@ -332,26 +399,10 @@ public:
       ImGui::SameLine();
       ImGui::InputString("##entitygroup", &selectedEntity->group);
 
-      if (ImGui::Button("Destroy")) {
-        selectedEntity->toDestroy = true;
-        selectedEntity = nullptr;
+      makeTopRowButtons();
+      if (selectedEntity == nullptr) {
         ImGui::EndGroup();
         goto FRAME_END;
-      }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Duplicate")) {
-        json jsonData = serialize(selectedEntity);
-        Entity *dentity = deserialize(jsonData);
-
-        std::random_device dev;
-        std::mt19937 rng(dev());
-        std::uniform_int_distribution<std::mt19937::result_type> dist(
-            1, 100000); //
-        dentity->iid = dist(rng);
-
-        changeSelectedEntity(dentity);
       }
 
       ImGui::InputInt("Layer###EntityLayerInput", &selectedEntity->layer);
