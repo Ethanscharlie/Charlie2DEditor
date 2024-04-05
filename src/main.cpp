@@ -1,7 +1,9 @@
 #include "Charlie2D.h"
+#include "ResourceManager.h"
 #include "imguiDataPanels.h"
 #include "include_tmp.h"
 #include <filesystem>
+#include <sstream>
 #include <vector>
 
 #define PROJECT_PATH _PROJECT_PATH
@@ -48,6 +50,7 @@ int main(int argc, char *argv[]) {
 json editorTempRunSave;
 bool inRunState = false;
 std::vector<Entity *> usedChildren;
+std::stringstream buffer;
 
 json serializeAllEntities() {
   json entitiesListJson;
@@ -113,6 +116,12 @@ public:
     for (const auto &entry : std::filesystem::directory_iterator(
              std::filesystem::path(projectFolderpath) / "img")) {
       std::filesystem::copy(entry.path(), "img" / entry.path().filename());
+    }
+
+    ResourceManager::getInstance(GameManager::renderer).reloadAllTextures();
+
+    for (Sprite *sprite : GameManager::getComponents<Sprite>()) {
+      sprite->image = Image(sprite->image.path);
     }
   }
 
@@ -204,6 +213,7 @@ public:
         if (ImGui::MenuItem("Run")) {
           if (!inRunState) {
             inRunState = true;
+            Camera::resetCamera();
             selectedEntity = nullptr;
             for (TransformEdit *component :
                  GameManager::getComponents<TransformEdit>()) {
@@ -296,7 +306,6 @@ public:
     // ImGui_ImplSDLRenderer2_NewFrame();
     // ImGui_ImplSDL2_NewFrame();
     // ImGui::NewFrame();
-    // ImGui::ShowDemoWindow();
     // ImGui::Render();
     // ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
 
@@ -304,7 +313,32 @@ public:
     ImGui_ImplSDL2_NewFrame();
 
     ImGui::NewFrame();
-    ImGui::SetNextWindowSize(ImVec2(600, 1000), ImGuiCond_FirstUseEver);
+
+    // Create the dockspace
+    ImGui::PushStyleColor(
+        ImGuiCol_DockingEmptyBg,
+        ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+    ImGui::PushStyleColor(
+        ImGuiCol_WindowBg,
+        ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background for windows
+    ImGui::PushStyleColor(
+        ImGuiCol_Border,
+        ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent border color
+    ImGuiID dockspaceId =
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+    ImGui::PopStyleColor(3); // Pop the three style colors that were pushed
+                             //
+    // auto dock_id_left = ImGui::DockBuilderSplitNode(
+    //     dockspaceId, ImGuiDir_Left, 0.2f, nullptr, &dockspaceId);
+    // auto dock_id_right = ImGui::DockBuilderSplitNode(
+    //     dockspaceId, ImGuiDir_Right, 0.2f, nullptr, &dockspaceId);
+    // auto dock_id_up = ImGui::DockBuilderSplitNode(dockspaceId, ImGuiDir_Up,
+    //                                               0.2f, nullptr,
+    //                                               &dockspaceId);
+    // auto dock_id_down = ImGui::DockBuilderSplitNode(
+    //     dockspaceId, ImGuiDir_Down, 0.2f, nullptr, &dockspaceId);
+
+    // Entities list frame
     ImGui::Begin("Entities");
 
     makeMenuBar();
@@ -377,7 +411,18 @@ public:
 
     makeEntityList();
 
-    ImGui::SameLine();
+    ImGui::End();
+    // ImGui::Render();
+    // ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+
+    // OTHER
+    // ImGui_ImplSDLRenderer2_NewFrame();
+    // ImGui_ImplSDL2_NewFrame();
+    //
+    // ImGui::NewFrame();
+    // ImGui::SetNextWindowSize(ImVec2(600, 1000), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Edit");
+
     ImGui::BeginGroup();
     if (selectedEntity != nullptr) {
       Box box = selectedEntity->box->getBox();
@@ -490,12 +535,33 @@ public:
 
   FRAME_END:
     ImGui::End();
+
+    ImGui::Begin("Console");
+
+    ImGui::Text(newlineInvertString(buffer.str()).c_str());
+
+    ImGui::End();
+
     ImGui::Render();
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
 
     SDL_RenderSetLogicalSize(GameManager::renderer,
                              GameManager::gameWindowSize.x,
                              GameManager::gameWindowSize.y);
+  }
+
+  std::string newlineInvertString(const std::string &input) {
+    std::istringstream iss(input);
+    std::vector<std::string> result;
+    std::string line;
+    while (std::getline(iss, line)) {
+      result.insert(result.begin(), line);
+    }
+    std::ostringstream oss;
+    for (const auto &str : result) {
+      oss << str << "\n";
+    }
+    return oss.str();
   }
 
   float sliderexample = 0;
@@ -507,13 +573,34 @@ public:
     if (!inRunState) {
       Camera::position +=
           InputManager::checkAxis() * speed * GameManager::deltaTime;
+
+      Camera::scale += InputManager::mouseScroll * 0.10;
+
+      if (InputManager::checkInput("jumpTrigger")) {
+        mouseStartOnHold = InputManager::getMouseWorldPosition();
+      }
+      if (InputManager::checkInput("jump")) {
+        if (InputManager::getMouseWorldPosition() != mouseStartOnHold) {
+          Camera::position +=
+              mouseStartOnHold - InputManager::getMouseWorldPosition();
+          mouseStartOnHold = InputManager::getMouseWorldPosition();
+        }
+      }
+
+      if (InputManager::keys[SDLK_f] && selectedEntity != nullptr) {
+        Camera::setPosition(selectedEntity->box->getBox().getCenter());
+      }
     }
   }
 
+private:
   const float speed = 400.0f;
+  Vector2f mouseStartOnHold;
 };
 
 int main(int argc, char *argv[]) {
+  std::cout.rdbuf(buffer.rdbuf());
+
   projectFolderpath = PROJECT_PATH;
   projectFilepath =
       std::filesystem::path(projectFolderpath) / "Project.ch2dscene";

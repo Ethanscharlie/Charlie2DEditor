@@ -85,6 +85,19 @@ void imguiDataPanel(PropertyData data) {
                        string);
   }
 
+  else if (data.type == typeid(int)) {
+    int *value = static_cast<int *>(data.value);
+    ImGui::InputInt(std::format("##{}intinputprop", data.name).c_str(), value);
+  }
+
+  else if (data.type == typeid(Uint8)) {
+    Uint8 *value = static_cast<Uint8 *>(data.value);
+    int *valueInt = static_cast<int *>(data.value);
+
+    ImGui::InputInt(std::format("##{}intU8inputprop", data.name).c_str(),
+                    valueInt);
+  }
+
   else if (data.type == typeid(Image)) {
     Image *image = static_cast<Image *>(data.value);
     std::string imagePath = image->path;
