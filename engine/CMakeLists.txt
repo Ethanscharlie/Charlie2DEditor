@@ -126,7 +126,7 @@ endif()
 
 # copy image directory to build directory
 file(COPY ${PROJECT_PATH}/img DESTINATION ${CMAKE_BINARY_DIR})
-file(COPY ${PROJECT_PATH}/Project.ch2dscene DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${PROJECT_PATH}/EditorData.json DESTINATION ${CMAKE_BINARY_DIR})
 
 ADD_DEFINITIONS( -D_PROJECT_PATH=\"${PROJECT_PATH}\")
 

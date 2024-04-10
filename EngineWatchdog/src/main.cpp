@@ -1,6 +1,8 @@
+#include "nlohmann/json.hpp"
 #include <SDL2/SDL_video.h>
 #include <cstdlib>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -43,10 +45,29 @@ int main() {
 
   // Copy engine files to /tmp
   if (!fs::exists(enginePath)) {
-    fs::copy(copyFromPath, enginePath, fs::copy_options::recursive);
-  } else {
-    fs::remove_all(enginePath);
-    fs::copy(copyFromPath, enginePath, fs::copy_options::recursive);
+    std::system(std::format("cp -r {} /tmp/", copyFromPath).c_str());
+  }
+
+  if (!fs::exists("/tmp/tmpcharlie2Dproject")) {
+    std::system("mkdir /tmp/tmpcharlie2Dproject");
+    std::system("mkdir /tmp/tmpcharlie2Dproject/src");
+    std::system("mkdir /tmp/tmpcharlie2Dproject/img");
+    std::system("mkdir /tmp/tmpcharlie2Dproject/img/Scenes");
+    std::system("touch /tmp/tmpcharlie2Dproject/EditorData.json");
+
+    nlohmann::json newProjectJsonData;
+    newProjectJsonData["name"] = "New Charlie2D Project";
+    newProjectJsonData["scene"] = "img/Scenes/main.ch2d";
+    std::ofstream file("/tmp/tmpcharlie2Dproject/EditorData.json");
+    file << std::setw(2) << newProjectJsonData << std::endl;
+    file.close();
+
+    nlohmann::json jsonData;
+    jsonData["Scene"];
+    std::ofstream mainSceneFile(
+        "/tmp/tmpcharlie2Dproject/img/Scenes/main.ch2d");
+    mainSceneFile << std::setw(2) << jsonData << std::endl;
+    mainSceneFile.close();
   }
 
   // Folder path containing header files

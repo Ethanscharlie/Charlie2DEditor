@@ -1,3 +1,0 @@
-/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/build/CMakeFiles/index.dir
-/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/build/CMakeFiles/edit_cache.dir
-/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/build/CMakeFiles/rebuild_cache.dir

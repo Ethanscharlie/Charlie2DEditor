@@ -7,9 +7,7 @@
 #include <format>
 #include <string>
 
-std::string projectFilepath = _PROJECT_PATH;
-std::string projectFolderpath =
-    std::filesystem::path(projectFilepath).parent_path();
+std::string projectFolderpath = "";
 
 Entity *selectedEntity = nullptr;
 
@@ -116,7 +114,7 @@ void imguiDataPanel(PropertyData data) {
       if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
         imagePath = ImGuiFileDialog::Instance()->GetFilePathName();
         imagePath = std::filesystem::absolute(imagePath).lexically_relative(
-            projectFilepath);
+            projectFolderpath);
         imagePath = imagePath.substr(3);
       }
 
@@ -152,7 +150,7 @@ void imguiDataPanel(PropertyData data) {
       if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
         fontPath = ImGuiFileDialog::Instance()->GetFilePathName();
         fontPath = std::filesystem::absolute(fontPath).lexically_relative(
-            projectFilepath);
+            projectFolderpath);
         fontPath = fontPath.substr(3);
       }
 

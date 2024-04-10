@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/build",
-  "command": "/usr/bin/c++ -D_PROJECT_PATH=\\\"/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/testGame\\\" -I/usr/include/SDL2 -I/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/testGame/src -I/usr/include/nlohmann -I/usr/local/include/charlie2D -I/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/include -I/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/src/Bosses -I/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/src -std=gnu++20 -o CMakeFiles/index.dir/src/main.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/src/main.cpp",
-  "file": "/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/engine/src/main.cpp",
-  "output": "CMakeFiles/index.dir/src/main.cpp.o"
-}
-]

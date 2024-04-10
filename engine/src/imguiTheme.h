@@ -7,7 +7,7 @@ void SetupImGuiStyle() {
 
   // Material Flat style by ImJC1C from ImThemes
   ImGuiStyle &style = ImGui::GetStyle();
-  io.Fonts->AddFontFromFileTTF("img/fonts/KodeMono-VariableFont_wght.ttf", 17);
+  // io.Fonts->AddFontFromFileTTF("img/fonts/KodeMono-VariableFont_wght.ttf", 17);
 
   style.Alpha = 1.0f;
   style.DisabledAlpha = 0.5f;

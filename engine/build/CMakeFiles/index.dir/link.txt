@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/index.dir/src/main.cpp.o -o index  -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image -lcharlie2D

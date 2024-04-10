@@ -2,9 +2,11 @@
 #include "ResourceManager.h"
 #include "imguiDataPanels.h"
 #include "include_tmp.h"
+#include "nlohmann/json.hpp"
+#include <charlie2D/ImGuiFileDialog.h>
+#include <complex>
 #include <filesystem>
 #include <sstream>
-#include <vector>
 
 #define PROJECT_PATH _PROJECT_PATH
 
@@ -12,8 +14,8 @@
 
 int main(int argc, char *argv[]) {
   projectFolderpath = PROJECT_PATH;
-  projectFilepath =
-      std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
+  // projectFilepath =
+  //     std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
   GameManager::init();
 
@@ -67,6 +69,7 @@ void writePrevProject() {
   std::ofstream file("../prevProject.txt");
   file << projectFolderpath << std::endl;
   file.close();
+  std::cout << "Set prev path as " << projectFolderpath << "\n";
 }
 
 void changeSelectedEntity(Entity *entity) {
@@ -97,6 +100,13 @@ public:
   void start() override {
     entity->useLayer = true;
     entity->layer = 100;
+
+    std::ifstream file(std::filesystem::path(projectFolderpath) /
+                       getEditorData()["scene"]);
+    json jsonData = json::parse(file);
+    file.close();
+
+    deserializeList(jsonData, false);
   }
 
   void removeFolderContents(const std::string &folder) {
@@ -186,22 +196,36 @@ public:
         }
         if (ImGui::MenuItem("New")) {
           IGFD::FileDialogConfig config;
-          config.path = projectFolderpath;
-          ImGuiFileDialog::Instance()->OpenDialog("NewProject", "Choose Folder",
-                                                  nullptr, config);
+          config.path = "/home";
+          ImGuiFileDialog::Instance()->OpenDialog(
+              "NewProject", "Choose Project Folder", nullptr, config);
         }
         if (ImGui::MenuItem("Save") && !inRunState) {
-          json jsonData = serializeAllEntities();
+          json jsonEntitesData = serializeAllEntities();
+          json editorData = getEditorData();
 
-          std::ofstream file(projectFilepath);
-          file << std::setw(2) << jsonData << std::endl;
+          changeEditorData(editorData);
+
+          std::ofstream file(std::filesystem::path(projectFolderpath) /
+                             editorData["scene"]);
+          file << std::setw(2) << jsonEntitesData << std::endl;
           file.close();
+          std::cout << "Saved to "
+                    << std::filesystem::path(projectFolderpath) /
+                           editorData["scene"]
+                    << "\n";
         }
         if (ImGui::MenuItem("Open") && !inRunState) {
           IGFD::FileDialogConfig config;
           config.path = projectFolderpath;
           ImGuiFileDialog::Instance()->OpenDialog(
-              "ChooseProject", "Choose File", ".ch2dscene", config);
+              "ChooseProject", "Choose File", nullptr, config);
+        }
+        if (ImGui::MenuItem("Set Collection") && !inRunState) {
+          IGFD::FileDialogConfig config;
+          config.path = projectFolderpath;
+          ImGuiFileDialog::Instance()->OpenDialog("ChooseScene", "Choose File",
+                                                  ".ch2d", config);
         }
         if (ImGui::MenuItem("Exit")) {
           std::exit(1);
@@ -265,8 +289,7 @@ public:
 
       std::random_device dev;
       std::mt19937 rng(dev());
-      std::uniform_int_distribution<std::mt19937::result_type> dist(1,
-                                                                    100000); //
+      std::uniform_int_distribution<std::mt19937::result_type> dist(1, 100000);
       dentity->iid = dist(rng);
 
       changeSelectedEntity(dentity);
@@ -274,11 +297,11 @@ public:
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Make Prefab")) {
+    if (ImGui::Button("Make Collection")) {
       IGFD::FileDialogConfig config;
       config.path = projectFolderpath;
       ImGuiFileDialog::Instance()->OpenDialog("MakePrefab", "Choose File",
-                                              ".ch2dscene", config);
+                                              ".ch2d", config);
     }
 
     if (ImGuiFileDialog::Instance()->Display(
@@ -287,7 +310,9 @@ public:
         std::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
         std::cout << filepath << "\n";
 
-        json jsonData = serialize(selectedEntity);
+        json jsonData;
+        jsonData["Scene"][selectedEntity->tag].push_back(
+            serialize(selectedEntity));
         std::ofstream file(filepath);
         file << std::setw(2) << jsonData << std::endl;
         file.close();
@@ -298,16 +323,38 @@ public:
     }
   }
 
+  json getEditorData() {
+    std::ifstream file(std::filesystem::path(projectFolderpath) /
+                       "EditorData.json");
+    json jsonData = json::parse(file);
+    file.close();
+    return jsonData;
+  }
+
+  void changeEditorData(json jsonData) {
+    std::ofstream file(std::filesystem::path(projectFolderpath) /
+                       "EditorData.json");
+    file << std::setw(2) << jsonData << std::endl;
+    file.close();
+  }
+
+  json getMainScene() {
+    std::ifstream file(getEditorData()["scene"]);
+    json jsonData = json::parse(file);
+    file.close();
+    return jsonData;
+  }
+
+  void changeMainScene(std::filesystem::path newScenePath) {
+    json newEditorData = getEditorData();
+    newEditorData["scene"] = newScenePath;
+    changeEditorData(newEditorData);
+  }
+
   void update() override {
     SDL_RenderSetLogicalSize(GameManager::renderer,
                              GameManager::currentWindowSize.x,
                              GameManager::currentWindowSize.y);
-
-    // ImGui_ImplSDLRenderer2_NewFrame();
-    // ImGui_ImplSDL2_NewFrame();
-    // ImGui::NewFrame();
-    // ImGui::Render();
-    // ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
 
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -327,7 +374,7 @@ public:
     ImGuiID dockspaceId =
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
     ImGui::PopStyleColor(3); // Pop the three style colors that were pushed
-                             //
+
     // auto dock_id_left = ImGui::DockBuilderSplitNode(
     //     dockspaceId, ImGuiDir_Left, 0.2f, nullptr, &dockspaceId);
     // auto dock_id_right = ImGui::DockBuilderSplitNode(
@@ -346,25 +393,38 @@ public:
     if (ImGuiFileDialog::Instance()->Display(
             "NewProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
       if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-        projectFolderpath = std::filesystem::path(
-                                ImGuiFileDialog::Instance()->GetCurrentPath()) /
-                            "Project";
-        projectFilepath =
-            std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
+        projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        std::string mainRelativeScenePath = "img/Scenes/main.ch2d";
 
         std::filesystem::create_directory(projectFolderpath);
 
+        // Create Editor Data file
+        json newProjectJsonData;
+        newProjectJsonData["name"] = "New Charlie2D Project";
+        newProjectJsonData["scene"] = mainRelativeScenePath;
+        std::ofstream file(std::filesystem::path(projectFolderpath) /
+                           "EditorData.json");
+        file << std::setw(2) << newProjectJsonData << std::endl;
+        file.close();
+
+        // Create subdirectories
         std::filesystem::create_directory(
             std::filesystem::path(projectFolderpath) / "img");
         std::filesystem::create_directory(
             std::filesystem::path(projectFolderpath) / "src");
 
+        std::filesystem::create_directory(
+            std::filesystem::path(projectFolderpath) / "img" / "Scenes");
+
+        // Create the main starting scene file
         json jsonData;
         jsonData["Scene"];
-        std::ofstream file(projectFilepath);
-        file << std::setw(2) << jsonData << std::endl;
-        file.close();
+        std::ofstream mainSceneFile(std::filesystem::path(projectFolderpath) /
+                                    mainRelativeScenePath);
+        mainSceneFile << std::setw(2) << jsonData << std::endl;
+        mainSceneFile.close();
 
+        // Remove all current entities
         for (Entity *entity : GameManager::getAllObjects()) {
           if (entity->tag[0] == '$')
             continue;
@@ -381,14 +441,11 @@ public:
             "ChooseProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
       if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
         projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
-        projectFilepath =
-            std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
-        std::ifstream file(projectFilepath);
+        std::ifstream file(std::filesystem::path(projectFolderpath) /
+                           getEditorData()["scene"]);
         json jsonData = json::parse(file);
         file.close();
-
-        std::cout << std::setw(2) << jsonData << std::endl;
 
         selectedEntity = nullptr;
         for (Entity *entity : GameManager::getAllObjects()) {
@@ -399,6 +456,37 @@ public:
         deserializeList(jsonData, false);
 
         writePrevProject();
+      }
+
+      // close
+      ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGuiFileDialog::Instance()->Display(
+            "ChooseScene", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        std::string sceneSelectionPath =
+            ImGuiFileDialog::Instance()->GetFilePathName();
+        sceneSelectionPath =
+            std::filesystem::absolute(sceneSelectionPath)
+                .lexically_relative(std::filesystem::path(projectFolderpath) /
+                                    "EditorData.json");
+        sceneSelectionPath = sceneSelectionPath.substr(3);
+
+        changeMainScene(sceneSelectionPath);
+
+        std::ifstream file(std::filesystem::path(projectFolderpath) /
+                           getEditorData()["scene"]);
+        json jsonData = json::parse(file);
+        file.close();
+
+        selectedEntity = nullptr;
+        for (Entity *entity : GameManager::getAllObjects()) {
+          if (entity->tag[0] == '$')
+            continue;
+          entity->toDestroy = true;
+        }
+        deserializeList(jsonData, false);
       }
 
       // close
@@ -594,8 +682,8 @@ int main(int argc, char *argv[]) {
   std::cout.rdbuf(buffer.rdbuf());
 
   projectFolderpath = PROJECT_PATH;
-  projectFilepath =
-      std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
+  // projectFilepath =
+  //     std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
   GameManager::init();
 
@@ -603,13 +691,6 @@ int main(int argc, char *argv[]) {
 
   GameManager::createEntity("$EntitiesPanel")->add<EntitiesPanel>();
   GameManager::createEntity("$CameraMove")->add<CameraMover>();
-  std::ifstream file(projectFilepath);
-  json jsonData = json::parse(file);
-  file.close();
-
-  std::cout << std::setw(2) << jsonData << std::endl;
-
-  deserializeList(jsonData, false);
 
   GameManager::doUpdateLoop();
   return 0;
