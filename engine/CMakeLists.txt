@@ -61,7 +61,6 @@ target_include_directories(index PUBLIC
     /usr/include/nlohmann
     /usr/local/include/charlie2D
     ${PROJECT_SOURCE_DIR}/include 
-    ${PROJECT_SOURCE_DIR}/src/Bosses 
     ${PROJECT_SOURCE_DIR}/src
 )
 
@@ -126,6 +125,7 @@ endif()
 
 # copy image directory to build directory
 file(COPY ${PROJECT_PATH}/img DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY /usr/local/share/engine/sysimg DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${PROJECT_PATH}/EditorData.json DESTINATION ${CMAKE_BINARY_DIR})
 
 ADD_DEFINITIONS( -D_PROJECT_PATH=\"${PROJECT_PATH}\")

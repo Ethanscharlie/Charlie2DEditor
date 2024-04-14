@@ -22,7 +22,7 @@ target_include_directories(engine_watchdog PUBLIC
 target_link_libraries(engine_watchdog
   SDL2
   # SDL2_ttf
-  # SDL2_image
+  SDL2_image
   )
 
 set(EDITOR_DIRECTORY "${CMAKE_SOURCE_DIR}/../engine")

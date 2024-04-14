@@ -1,1 +1,1 @@
-/usr/bin/c++ -rdynamic CMakeFiles/engine_watchdog.dir/src/main.cpp.o -o engine_watchdog  -lSDL2
+/usr/bin/c++ -rdynamic CMakeFiles/engine_watchdog.dir/src/main.cpp.o -o engine_watchdog  -lSDL2 -lSDL2_image

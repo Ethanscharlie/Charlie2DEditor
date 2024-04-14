@@ -1,5 +1,6 @@
 #pragma once
 #include "Charlie2D.h"
+#include "SimplePanel.h"
 
 class TransformEdit : public Component {
 public:
@@ -55,9 +56,9 @@ public:
     box.anchor = 4;
     box.setScale({50, 50});
     box.setLocalWithCenter({0, 0});
-    moveButton->add<UISliceRenderer>()->rendererInWorld = true;
-    moveButton->get<UISliceRenderer>()->alpha = 120;
-    moveButton->add<UISliceRenderer>()->setColor({0, 0, 255});
+    moveButton->add<SimplePanel>()->rendererInWorld = true;
+    moveButton->get<SimplePanel>()->alpha = 120;
+    moveButton->add<SimplePanel>()->setColor({0, 0, 255});
     Button &button = *moveButton->add<Button>();
     button.checkInWorld = true;
     button.onHold = [this]() {
@@ -79,10 +80,10 @@ public:
     box.anchor = 4;
     box.setScale({50, 50});
     box.setLocalWithCenter(horizontalScalePosition);
-    horizontalScaleButton->add<UISliceRenderer>()->rendererInWorld = true;
-    horizontalScaleButton->get<UISliceRenderer>()->alpha = 120;
+    horizontalScaleButton->add<SimplePanel>()->rendererInWorld = true;
+    horizontalScaleButton->get<SimplePanel>()->alpha = 120;
 
-    horizontalScaleButton->add<UISliceRenderer>()->setColor({255, 0, 0});
+    horizontalScaleButton->add<SimplePanel>()->setColor({255, 0, 0});
     Button &button = *horizontalScaleButton->add<Button>();
     button.checkInWorld = true;
     button.onClick = [this]() {
@@ -97,14 +98,14 @@ public:
   void createVerticalScaleButton() {
     verticalScaleButton = GameManager::createEntity("$horizontalScaleButton");
     verticalScaleButton->setParent(entity);
-    verticalScaleButton->add<UISliceRenderer>()->rendererInWorld = true;
+    verticalScaleButton->add<SimplePanel>()->rendererInWorld = true;
     entityBox &box = *verticalScaleButton->get<entityBox>();
     box.anchor = 4;
     box.setScale({50, 50});
     box.setLocalWithCenter(verticalScalePosition);
 
-    verticalScaleButton->add<UISliceRenderer>()->setColor({0, 255, 0});
-    verticalScaleButton->get<UISliceRenderer>()->alpha = 120;
+    verticalScaleButton->add<SimplePanel>()->setColor({0, 255, 0});
+    verticalScaleButton->get<SimplePanel>()->alpha = 120;
     Button &button = *verticalScaleButton->add<Button>();
     button.checkInWorld = true;
     button.onClick = [this]() {

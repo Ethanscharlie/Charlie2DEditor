@@ -20,6 +20,7 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
   /usr/include/SDL2/SDL_haptic.h \
   /usr/include/SDL2/SDL_hidapi.h \
   /usr/include/SDL2/SDL_hints.h \
+  /usr/include/SDL2/SDL_image.h \
   /usr/include/SDL2/SDL_joystick.h \
   /usr/include/SDL2/SDL_keyboard.h \
   /usr/include/SDL2/SDL_keycode.h \
@@ -551,6 +552,8 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 
 /usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/xsaveoptintrin.h:
 
+/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/xsaveintrin.h:
+
 /usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/shaintrin.h:
 
 /usr/include/c++/13.2.1/bits/stl_pair.h:
@@ -725,9 +728,9 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 
 /usr/include/SDL2/SDL_endian.h:
 
-/usr/include/alloca.h:
+/usr/include/c++/13.2.1/bits/ranges_algo.h:
 
-/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/uintrintrin.h:
+/usr/include/nlohmann/detail/conversions/to_chars.hpp:
 
 /usr/include/SDL2/SDL_system.h:
 
@@ -750,6 +753,10 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/include/bits/endian.h:
 
 /usr/include/c++/13.2.1/bits/localefwd.h:
+
+/usr/include/bits/types/struct_tm.h:
+
+/usr/include/c++/13.2.1/type_traits:
 
 /usr/include/c++/13.2.1/bits/unordered_map.h:
 
@@ -776,10 +783,6 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/include/c++/13.2.1/bits/locale_facets_nonio.tcc:
 
 /usr/include/SDL2/SDL_keycode.h:
-
-/usr/include/c++/13.2.1/bits/stl_uninitialized.h:
-
-/usr/include/bits/byteswap.h:
 
 /usr/include/SDL2/SDL_video.h:
 
@@ -843,6 +846,8 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 
 /usr/include/wctype.h:
 
+/usr/include/alloca.h:
+
 /usr/include/gnu/stubs.h:
 
 /usr/include/SDL2/SDL_main.h:
@@ -852,6 +857,16 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/include/SDL2/SDL_metal.h:
 
 /usr/include/bits/stdlib-float.h:
+
+/usr/include/c++/13.2.1/bits/max_size_type.h:
+
+/usr/include/time.h:
+
+/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/pmmintrin.h:
+
+/usr/include/c++/13.2.1/bits/ostream_insert.h:
+
+/usr/include/SDL2/SDL.h:
 
 /usr/include/c++/13.2.1/ios:
 
@@ -870,14 +885,6 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/include/c++/13.2.1/bits/ranges_uninitialized.h:
 
 /usr/include/SDL2/SDL_config.h:
-
-/usr/include/bits/atomic_wide_counter.h:
-
-/usr/include/bits/posix_opt.h:
-
-/usr/include/SDL2/SDL_gamecontroller.h:
-
-/usr/include/c++/13.2.1/x86_64-pc-linux-gnu/bits/c++config.h:
 
 /usr/include/SDL2/SDL_sensor.h:
 
@@ -903,9 +910,15 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 
 /usr/include/bits/stdint-least.h:
 
+/usr/include/c++/13.2.1/sstream:
+
+/usr/include/bits/types/struct_FILE.h:
+
 /usr/include/bits/environments.h:
 
 /usr/include/SDL2/SDL_haptic.h:
+
+/usr/include/SDL2/SDL_image.h:
 
 /usr/include/bits/getopt_core.h:
 
@@ -916,20 +929,6 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/avx512vbmiintrin.h:
 
 /usr/include/bits/types.h:
-
-/usr/include/c++/13.2.1/bits/max_size_type.h:
-
-/usr/include/bits/types/struct_FILE.h:
-
-/usr/include/c++/13.2.1/sstream:
-
-/usr/include/time.h:
-
-/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/pmmintrin.h:
-
-/usr/include/SDL2/SDL.h:
-
-/usr/include/c++/13.2.1/bits/ostream_insert.h:
 
 /usr/include/bits/types/__fpos64_t.h:
 
@@ -972,6 +971,20 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/include/SDL2/SDL_log.h:
 
 /usr/include/bits/getopt_posix.h:
+
+/usr/include/bits/posix_opt.h:
+
+/usr/include/SDL2/SDL_gamecontroller.h:
+
+/usr/include/c++/13.2.1/x86_64-pc-linux-gnu/bits/c++config.h:
+
+/usr/include/bits/atomic_wide_counter.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/c++/13.2.1/bits/stl_uninitialized.h:
+
+/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/uintrintrin.h:
 
 /usr/include/SDL2/SDL_stdinc.h:
 
@@ -1087,8 +1100,6 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 
 /usr/include/c++/13.2.1/backward/auto_ptr.h:
 
-/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/xsaveintrin.h:
-
 /usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/float.h:
 
 /usr/include/SDL2/SDL_error.h:
@@ -1096,12 +1107,6 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/include/bits/types/__locale_t.h:
 
 /usr/include/c++/13.2.1/ostream:
-
-/usr/include/c++/13.2.1/bits/unique_ptr.h:
-
-/usr/include/c++/13.2.1/stdlib.h:
-
-/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/x86gprintrin.h:
 
 /usr/include/bits/mathcalls.h:
 
@@ -1133,13 +1138,11 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 
 /usr/include/bits/types/struct_itimerspec.h:
 
-/usr/include/c++/13.2.1/bits/ranges_algo.h:
+/usr/include/c++/13.2.1/bits/unique_ptr.h:
 
-/usr/include/c++/13.2.1/type_traits:
+/usr/include/c++/13.2.1/stdlib.h:
 
-/usr/include/bits/types/struct_tm.h:
-
-/usr/include/nlohmann/detail/conversions/to_chars.hpp:
+/usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/x86gprintrin.h:
 
 /usr/include/c++/13.2.1/bits/uses_allocator.h:
 

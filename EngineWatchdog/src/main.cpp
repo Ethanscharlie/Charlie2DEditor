@@ -1,4 +1,5 @@
 #include "nlohmann/json.hpp"
+#include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 #include <cstdlib>
 #include <filesystem>
@@ -9,6 +10,7 @@
 #include <unistd.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 namespace fs = std::filesystem;
 
@@ -18,6 +20,7 @@ const std::string enginePath = "/tmp/engine/";
 SDL_Window *window;
 
 void createWindow() {
+
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError()
               << std::endl;
@@ -33,10 +36,36 @@ void createWindow() {
               << std::endl;
     return;
   }
+
+  SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+  SDL_Texture *texture = NULL;
+  texture = IMG_LoadTexture(renderer, "/usr/local/share/engine/sysimg/Splash.png");
+
+  if (texture == nullptr) {
+    std::cout << "Failed to load Image\n";
+    std::cout << IMG_GetError() << std::endl;
+  }
+
+  SDL_Rect renderRect = {0, 0, 800, 600};
+  SDL_RenderCopy(renderer, texture, nullptr, &renderRect);
+
+  SDL_RenderPresent(renderer);
+
+}
+
+void closeWindow() {
+  if (window == nullptr)
+    return;
+  SDL_DestroyWindow(window);
+  window = nullptr;
 }
 
 int main() {
-  // createWindow();
+  SDL_Init(SDL_INIT_VIDEO);
+  IMG_Init(IMG_INIT_PNG);
+
+  createWindow();
 
   if (!fs::exists(copyFromPath)) {
     std::cerr << "Error: Engine files not correctly copied to the system\n";
@@ -52,6 +81,7 @@ int main() {
     std::system("mkdir /tmp/tmpcharlie2Dproject");
     std::system("mkdir /tmp/tmpcharlie2Dproject/src");
     std::system("mkdir /tmp/tmpcharlie2Dproject/img");
+    std::system("mkdir /tmp/tmpcharlie2Dproject/sysimg");
     std::system("mkdir /tmp/tmpcharlie2Dproject/img/Scenes");
     std::system("touch /tmp/tmpcharlie2Dproject/EditorData.json");
 
@@ -114,6 +144,7 @@ int main() {
       int buildResult = std::system("cmake --build . && make");
       if (buildResult == 0) {
         // Run the executable
+        closeWindow();
         int runResult = std::system(("./index " + folderPath).c_str());
         if (WIFEXITED(runResult)) {
           int exitCode = WEXITSTATUS(runResult);
@@ -140,7 +171,7 @@ int main() {
     }
   }
 
-  // SDL_DestroyWindow(window);
-  // SDL_Quit();
+  closeWindow();
+  SDL_Quit();
   return 0;
 }

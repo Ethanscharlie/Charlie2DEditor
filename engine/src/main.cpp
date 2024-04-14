@@ -1,3 +1,5 @@
+#include "imgui_internal.h"
+
 #include "Charlie2D.h"
 #include "ResourceManager.h"
 #include "imguiDataPanels.h"
@@ -17,15 +19,15 @@ int main(int argc, char *argv[]) {
   // projectFilepath =
   //     std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
-  GameManager::init();
-
-  std::ifstream file("Project.ch2dscene");
-  json jsonData = json::parse(file);
-  file.close();
-
-  deserializeList(jsonData, true);
-
-  GameManager::doUpdateLoop();
+  // GameManager::init();
+  //
+  // std::ifstream file("Project.ch2dscene");
+  // json jsonData = json::parse(file);
+  // file.close();
+  //
+  // deserializeList(jsonData, true);
+  //
+  // GameManager::doUpdateLoop();
   return 0;
 }
 
@@ -97,6 +99,24 @@ public:
 
 class EntitiesPanel : public ExtendedComponent {
 public:
+  bool checkEntityIsEngine(Entity *entity) {
+    if (entity->tag.size() > 0) {
+      if (entity->tag[0] == '$')
+        return true;
+    }
+
+    return false;
+  }
+
+  bool checkEntityIsEngine(std::string tag) {
+    if (tag.size() > 0) {
+      if (tag[0] == '$')
+        return true;
+    }
+
+    return false;
+  }
+
   void start() override {
     entity->useLayer = true;
     entity->layer = 100;
@@ -143,7 +163,7 @@ public:
         entitiesWithGroups;
 
     for (auto [tag, entityList] : GameManager::entities) {
-      if (tag[0] == '$')
+      if (checkEntityIsEngine(tag))
         continue;
       if (entityList.size() <= 0)
         continue;
@@ -154,7 +174,10 @@ public:
     }
 
     for (auto [tag, groups] : entitiesWithGroups) {
-      if (ImGui::TreeNodeEx(tag.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
+      std::string setTag = tag;
+      if (tag == "")
+        setTag = "None";
+      if (ImGui::TreeNodeEx(setTag.c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
         for (auto [group, entities] : groups) {
           if (group != "") {
             if (ImGui::TreeNodeEx(group.c_str(),
@@ -221,12 +244,6 @@ public:
           ImGuiFileDialog::Instance()->OpenDialog(
               "ChooseProject", "Choose File", nullptr, config);
         }
-        if (ImGui::MenuItem("Set Collection") && !inRunState) {
-          IGFD::FileDialogConfig config;
-          config.path = projectFolderpath;
-          ImGuiFileDialog::Instance()->OpenDialog("ChooseScene", "Choose File",
-                                                  ".ch2d", config);
-        }
         if (ImGui::MenuItem("Exit")) {
           std::exit(1);
         }
@@ -247,7 +264,7 @@ public:
             editorTempRunSave = serializeAllEntities();
 
             for (Entity *dentity : GameManager::getAllObjects()) {
-              if (dentity->tag[0] == '$')
+              if (checkEntityIsEngine(dentity))
                 continue;
               for (auto &[type, component] : dentity->components) {
                 component->start();
@@ -261,7 +278,7 @@ public:
             inRunState = false;
             selectedEntity = nullptr;
             for (Entity *entity : GameManager::getAllObjects()) {
-              if (entity->tag[0] == '$')
+              if (checkEntityIsEngine(entity))
                 continue;
               entity->toDestroy = true;
             }
@@ -301,7 +318,7 @@ public:
       IGFD::FileDialogConfig config;
       config.path = projectFolderpath;
       ImGuiFileDialog::Instance()->OpenDialog("MakePrefab", "Choose File",
-                                              ".ch2d", config);
+                                              ".ch2dsec", config);
     }
 
     if (ImGuiFileDialog::Instance()->Display(
@@ -310,9 +327,7 @@ public:
         std::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
         std::cout << filepath << "\n";
 
-        json jsonData;
-        jsonData["Scene"][selectedEntity->tag].push_back(
-            serialize(selectedEntity));
+        json jsonData = serialize(selectedEntity);
         std::ofstream file(filepath);
         file << std::setw(2) << jsonData << std::endl;
         file.close();
@@ -351,6 +366,8 @@ public:
     changeEditorData(newEditorData);
   }
 
+  bool setupDockspaces = true;
+
   void update() override {
     SDL_RenderSetLogicalSize(GameManager::renderer,
                              GameManager::currentWindowSize.x,
@@ -361,19 +378,37 @@ public:
 
     ImGui::NewFrame();
 
-    // Create the dockspace
+    // // Create the dockspace
     ImGui::PushStyleColor(
         ImGuiCol_DockingEmptyBg,
         ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
     ImGui::PushStyleColor(
         ImGuiCol_WindowBg,
-        ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background for windows
+        ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background for
     ImGui::PushStyleColor(
         ImGuiCol_Border,
         ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent border color
     ImGuiID dockspaceId =
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
     ImGui::PopStyleColor(3); // Pop the three style colors that were pushed
+
+    if (setupDockspaces) {
+      auto dock_id_left = ImGui::DockBuilderSplitNode(
+          dockspaceId, ImGuiDir_Left, 0.2f, nullptr, &dockspaceId);
+      auto dock_id_right = ImGui::DockBuilderSplitNode(
+          dockspaceId, ImGuiDir_Right, 0.2f, nullptr, &dockspaceId);
+      auto dock_id_up = ImGui::DockBuilderSplitNode(
+          dockspaceId, ImGuiDir_Up, 0.2f, nullptr, &dockspaceId);
+      auto dock_id_down = ImGui::DockBuilderSplitNode(
+          dockspaceId, ImGuiDir_Down, 0.2f, nullptr, &dockspaceId);
+
+      ImGui::DockBuilderDockWindow("Entities", dock_id_left);
+      ImGui::DockBuilderDockWindow("Edit", dock_id_right);
+      ImGui::DockBuilderDockWindow("Console", dock_id_down);
+
+      ImGui::DockBuilderFinish(dockspaceId);
+      setupDockspaces = false;
+    }
 
     // auto dock_id_left = ImGui::DockBuilderSplitNode(
     //     dockspaceId, ImGuiDir_Left, 0.2f, nullptr, &dockspaceId);
@@ -426,7 +461,7 @@ public:
 
         // Remove all current entities
         for (Entity *entity : GameManager::getAllObjects()) {
-          if (entity->tag[0] == '$')
+          if (checkEntityIsEngine(entity))
             continue;
           entity->toDestroy = true;
         }
@@ -449,7 +484,7 @@ public:
 
         selectedEntity = nullptr;
         for (Entity *entity : GameManager::getAllObjects()) {
-          if (entity->tag[0] == '$')
+          if (checkEntityIsEngine(entity))
             continue;
           entity->toDestroy = true;
         }
@@ -462,39 +497,11 @@ public:
       ImGuiFileDialog::Instance()->Close();
     }
 
-    if (ImGuiFileDialog::Instance()->Display(
-            "ChooseScene", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
-      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-        std::string sceneSelectionPath =
-            ImGuiFileDialog::Instance()->GetFilePathName();
-        sceneSelectionPath =
-            std::filesystem::absolute(sceneSelectionPath)
-                .lexically_relative(std::filesystem::path(projectFolderpath) /
-                                    "EditorData.json");
-        sceneSelectionPath = sceneSelectionPath.substr(3);
-
-        changeMainScene(sceneSelectionPath);
-
-        std::ifstream file(std::filesystem::path(projectFolderpath) /
-                           getEditorData()["scene"]);
-        json jsonData = json::parse(file);
-        file.close();
-
-        selectedEntity = nullptr;
-        for (Entity *entity : GameManager::getAllObjects()) {
-          if (entity->tag[0] == '$')
-            continue;
-          entity->toDestroy = true;
-        }
-        deserializeList(jsonData, false);
-      }
-
-      // close
-      ImGuiFileDialog::Instance()->Close();
-    }
+    ImGui::Text(projectFolderpath.c_str());
 
     if (ImGui::Button("Create")) {
-      GameManager::createEntity("New Entity");
+      Entity *newEntity = GameManager::createEntity("");
+      newEntity->name = "New Entity";
     }
 
     makeEntityList();
