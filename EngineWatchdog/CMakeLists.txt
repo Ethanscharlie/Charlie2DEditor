@@ -5,8 +5,15 @@ project(EngineWatchdog)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+file(GLOB_RECURSE IMGUI_SOURCES 
+  ${PROJECT_SOURCE_DIR}/imgui/*.cpp 
+  )
+
 # Add executable
-add_executable(engine_watchdog src/main.cpp)
+add_executable(engine_watchdog 
+  ${IMGUI_SOURCES}
+  src/main.cpp
+  )
 
 if (WIN32) 
   set(sdl2_include_path "/usr/x86_64-w64-mingw32/include/SDL2")
@@ -17,6 +24,7 @@ endif()
 target_include_directories(engine_watchdog PUBLIC
   ${sdl2_include_path}
   /usr/include/nlohmann
+  ${PROJECT_SOURCE_DIR}/include/imgui
   )
 
 target_link_libraries(engine_watchdog

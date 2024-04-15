@@ -69,10 +69,122 @@ include CMakeFiles/engine_watchdog.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/engine_watchdog.dir/flags.make
 
+CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/ImGuiFileDialog.cpp
+CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/ImGuiFileDialog.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/ImGuiFileDialog.cpp > CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/ImGuiFileDialog.cpp -o CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.s
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui.cpp
+CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui.cpp > CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui.cpp -o CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.s
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_demo.cpp
+CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_demo.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_demo.cpp > CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_demo.cpp -o CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.s
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_draw.cpp
+CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_draw.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_draw.cpp > CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_draw.cpp -o CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.s
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdl2.cpp
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdl2.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdl2.cpp > CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdl2.cpp -o CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.s
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdlrenderer2.cpp
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdlrenderer2.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdlrenderer2.cpp > CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_impl_sdlrenderer2.cpp -o CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.s
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_tables.cpp
+CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_tables.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_tables.cpp > CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_tables.cpp -o CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.s
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
+CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_widgets.cpp
+CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o -MF CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o.d -o CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_widgets.cpp
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_widgets.cpp > CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.i
+
+CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/imgui/imgui_widgets.cpp -o CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.s
+
 CMakeFiles/engine_watchdog.dir/src/main.cpp.o: CMakeFiles/engine_watchdog.dir/flags.make
 CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/src/main.cpp
 CMakeFiles/engine_watchdog.dir/src/main.cpp.o: CMakeFiles/engine_watchdog.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/engine_watchdog.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/engine_watchdog.dir/src/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/engine_watchdog.dir/src/main.cpp.o -MF CMakeFiles/engine_watchdog.dir/src/main.cpp.o.d -o CMakeFiles/engine_watchdog.dir/src/main.cpp.o -c /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/src/main.cpp
 
 CMakeFiles/engine_watchdog.dir/src/main.cpp.i: cmake_force
@@ -85,15 +197,31 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.s: cmake_force
 
 # Object files for target engine_watchdog
 engine_watchdog_OBJECTS = \
+"CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o" \
+"CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o" \
+"CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o" \
+"CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o" \
+"CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o" \
+"CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o" \
+"CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o" \
+"CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o" \
 "CMakeFiles/engine_watchdog.dir/src/main.cpp.o"
 
 # External object files for target engine_watchdog
 engine_watchdog_EXTERNAL_OBJECTS =
 
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/ImGuiFileDialog.cpp.o
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/imgui.cpp.o
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/imgui_demo.cpp.o
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/imgui_draw.cpp.o
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdl2.cpp.o
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/imgui_impl_sdlrenderer2.cpp.o
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/imgui_tables.cpp.o
+engine_watchdog: CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o
 engine_watchdog: CMakeFiles/engine_watchdog.dir/src/main.cpp.o
 engine_watchdog: CMakeFiles/engine_watchdog.dir/build.make
 engine_watchdog: CMakeFiles/engine_watchdog.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable engine_watchdog"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable engine_watchdog"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/engine_watchdog.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

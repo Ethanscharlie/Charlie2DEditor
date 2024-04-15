@@ -1,7 +1,9 @@
 #include "nlohmann/json.hpp"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
+#include <cmath>
 #include <cstdlib>
+#include <cwchar>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -12,12 +14,19 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
+
 namespace fs = std::filesystem;
 
 const std::string copyFromPath = "/usr/local/share/engine/";
 const std::string enginePath = "/tmp/engine/";
 
 SDL_Window *window;
+SDL_Renderer *renderer;
+SDL_Texture *texture = NULL;
+std::string folderPath;
 
 void createWindow() {
 
@@ -37,21 +46,26 @@ void createWindow() {
     return;
   }
 
-  SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-  SDL_Texture *texture = NULL;
-  texture = IMG_LoadTexture(renderer, "/usr/local/share/engine/sysimg/Splash.png");
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+
+  ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+  ImGui_ImplSDLRenderer2_Init(renderer);
+
+  texture =
+      IMG_LoadTexture(renderer, "/usr/local/share/engine/sysimg/Splash.png");
 
   if (texture == nullptr) {
     std::cout << "Failed to load Image\n";
     std::cout << IMG_GetError() << std::endl;
   }
 
-  SDL_Rect renderRect = {0, 0, 800, 600};
-  SDL_RenderCopy(renderer, texture, nullptr, &renderRect);
-
-  SDL_RenderPresent(renderer);
-
+  ImGuiIO &io = ImGui::GetIO();
+  io.DisplaySize = ImVec2((float)800, (float)600);
+  // io.DisplayFramebufferScale =
+  //     ImVec2(io.DisplaySize.x / 800, io.DisplaySize.y / 600);
 }
 
 void closeWindow() {
@@ -59,6 +73,112 @@ void closeWindow() {
     return;
   SDL_DestroyWindow(window);
   window = nullptr;
+
+  ImGui_ImplSDLRenderer2_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
+}
+
+void imguiLoop() {
+  ImGui_ImplSDLRenderer2_NewFrame();
+  ImGui_ImplSDL2_NewFrame();
+
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) {
+    ImGui_ImplSDL2_ProcessEvent(&event);
+    switch (event.type) {
+    case SDL_QUIT:
+      closeWindow();
+      std::exit(0);
+      break;
+    }
+  }
+
+  SDL_Rect renderRect = {0, 0, 800, 600};
+  SDL_RenderCopy(renderer, texture, nullptr, &renderRect);
+
+  ImGui::NewFrame();
+  ImGui::Begin("Main");
+  ImGui::Text("Hello World");
+  ImGui::End();
+  ImGui::Render();
+  ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+
+  SDL_RenderPresent(renderer);
+}
+
+void splashLoop() {
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) {
+    switch (event.type) {
+    case SDL_QUIT:
+      closeWindow();
+      std::exit(0);
+      break;
+    }
+  }
+
+  SDL_Rect renderRect = {0, 0, 800, 600};
+  SDL_RenderCopy(renderer, texture, nullptr, &renderRect);
+
+  SDL_RenderPresent(renderer);
+}
+
+int doCompileLoop() {
+  // Iterate over header files and generate #include directives
+  for (const auto &entry : fs::directory_iterator(folderPath + "/src")) {
+    if (entry.is_regular_file() && entry.path().extension() == ".h") {
+      std::ofstream outFile(enginePath + "include/include_tmp.h",
+                            std::ios_base::app);
+      outFile << "#include " << entry.path().filename() << "" << std::endl;
+      outFile.close();
+    }
+  }
+
+  // Clean and create the build directory
+  fs::remove_all(enginePath + "build");
+  fs::create_directory(enginePath + "build");
+  if (chdir((enginePath + "build").c_str()) != 0) {
+    std::cerr << "Error: Unable to change directory." << std::endl;
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+  }
+
+  // Generate CMake cache with additional include directory
+  int cmakeResult = std::system(("cmake -DPROJECT_PATH=" + folderPath +
+                                 " -DCMAKE_INCLUDE_PATH=\"../include\" ..")
+                                    .c_str());
+  if (cmakeResult == 0) {
+    splashLoop();
+    int buildResult = std::system("cmake --build . && make");
+    if (buildResult == 0) {
+      // Run the executable
+      closeWindow();
+      int runResult = std::system(("./index " + folderPath).c_str());
+      if (WIFEXITED(runResult)) {
+        int exitCode = WEXITSTATUS(runResult);
+        // Handle exit code
+        if (exitCode == 42) {
+          std::cout << "Restarting the editor..." << std::endl;
+        } else {
+          std::cout << "Exiting the editor." << std::endl;
+          return 0;
+        }
+      }
+    } else {
+      std::cerr << "Build failed, exiting the editor." << std::endl;
+      return 0;
+    }
+  } else {
+    std::cerr << "CMake configuration failed, exiting the editor." << std::endl;
+    return 0;
+  }
+
+  if (chdir("..") != 0) {
+    std::cerr << "Error: Unable to change directory." << std::endl;
+  }
+
+  return 1;
 }
 
 int main() {
@@ -77,97 +197,27 @@ int main() {
     std::system(std::format("cp -r {} /tmp/", copyFromPath).c_str());
   }
 
-  if (!fs::exists("/tmp/tmpcharlie2Dproject")) {
-    std::system("mkdir /tmp/tmpcharlie2Dproject");
-    std::system("mkdir /tmp/tmpcharlie2Dproject/src");
-    std::system("mkdir /tmp/tmpcharlie2Dproject/img");
-    std::system("mkdir /tmp/tmpcharlie2Dproject/sysimg");
-    std::system("mkdir /tmp/tmpcharlie2Dproject/img/Scenes");
-    std::system("touch /tmp/tmpcharlie2Dproject/EditorData.json");
-
-    nlohmann::json newProjectJsonData;
-    newProjectJsonData["name"] = "New Charlie2D Project";
-    newProjectJsonData["scene"] = "img/Scenes/main.ch2d";
-    std::ofstream file("/tmp/tmpcharlie2Dproject/EditorData.json");
-    file << std::setw(2) << newProjectJsonData << std::endl;
-    file.close();
-
-    nlohmann::json jsonData;
-    jsonData["Scene"];
-    std::ofstream mainSceneFile(
-        "/tmp/tmpcharlie2Dproject/img/Scenes/main.ch2d");
-    mainSceneFile << std::setw(2) << jsonData << std::endl;
-    mainSceneFile.close();
-  }
-
-  // Folder path containing header files
-  std::string folderPath;
-  std::ifstream prevProjectFile(enginePath + "prevProject.txt");
-  if (prevProjectFile.is_open()) {
-    std::getline(prevProjectFile, folderPath);
-    prevProjectFile.close();
-  } else {
-    std::cerr << "Error: File not found :3" << std::endl;
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-  }
-
   // Create a temporary include file
   std::ofstream includeFile(enginePath + "include/include_tmp.h");
   includeFile.close(); // Create or truncate the file
 
-  // Iterate over header files and generate #include directives
-  for (const auto &entry : fs::directory_iterator(folderPath + "/src")) {
-    if (entry.is_regular_file() && entry.path().extension() == ".h") {
-      std::ofstream outFile(enginePath + "include/include_tmp.h",
-                            std::ios_base::app);
-      outFile << "#include " << entry.path().filename() << "" << std::endl;
-      outFile.close();
-    }
-  }
-
   while (true) {
-    // Clean and create the build directory
-    fs::remove_all(enginePath + "build");
-    fs::create_directory(enginePath + "build");
-    if (chdir((enginePath + "build").c_str()) != 0) {
-      std::cerr << "Error: Unable to change directory." << std::endl;
-      SDL_DestroyWindow(window);
-      SDL_Quit();
-    }
-
-    // Generate CMake cache with additional include directory
-    int cmakeResult = std::system(("cmake -DPROJECT_PATH=" + folderPath +
-                                   " -DCMAKE_INCLUDE_PATH=\"../include\" ..")
-                                      .c_str());
-    if (cmakeResult == 0) {
-      int buildResult = std::system("cmake --build . && make");
-      if (buildResult == 0) {
-        // Run the executable
-        closeWindow();
-        int runResult = std::system(("./index " + folderPath).c_str());
-        if (WIFEXITED(runResult)) {
-          int exitCode = WEXITSTATUS(runResult);
-          // Handle exit code
-          if (exitCode == 42) {
-            std::cout << "Restarting the editor..." << std::endl;
-          } else {
-            std::cout << "Exiting the editor." << std::endl;
-            break;
-          }
-        }
-      } else {
-        std::cerr << "Build failed, exiting the editor." << std::endl;
-        break;
-      }
+    std::ifstream prevProjectFile(enginePath + "prevProject.txt");
+    if (prevProjectFile.is_open()) {
+      std::getline(prevProjectFile, folderPath);
+      prevProjectFile.close();
     } else {
-      std::cerr << "CMake configuration failed, exiting the editor."
-                << std::endl;
-      break;
+      std::cerr << "Error: File not found :3" << std::endl;
     }
 
-    if (chdir("..") != 0) {
-      std::cerr << "Error: Unable to change directory." << std::endl;
+    folderPath = "/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/Fish2";
+
+    bool prevPathBeenSet = folderPath != "";
+    if (prevPathBeenSet) {
+      bool keepOpen = doCompileLoop();
+      if (!keepOpen) break;
+    } else {
+      imguiLoop();
     }
   }
 

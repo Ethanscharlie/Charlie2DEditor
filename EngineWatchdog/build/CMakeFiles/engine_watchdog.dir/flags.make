@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/usr/include/SDL2 -I/usr/include/nlohmann
+CXX_INCLUDES = -I/usr/include/SDL2 -I/usr/include/nlohmann -I/home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/include/imgui
 
 CXX_FLAGS = -std=gnu++20
 
