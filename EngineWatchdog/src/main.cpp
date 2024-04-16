@@ -98,8 +98,18 @@ void imguiLoop() {
   SDL_RenderCopy(renderer, texture, nullptr, &renderRect);
 
   ImGui::NewFrame();
-  ImGui::Begin("Main");
-  ImGui::Text("Hello World");
+  ImGui::SetNextWindowPos(ImVec2(50, 50));
+  ImGui::SetNextWindowSize(ImVec2(150, 200));
+  ImGui::Begin("Fixed Panel", nullptr,
+               ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoTitleBar);
+
+  if (ImGui::Button("New Project")) {
+  }
+
+  if (ImGui::Button("Open Project")) {
+  }
+
   ImGui::End();
   ImGui::Render();
   ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
@@ -215,7 +225,8 @@ int main() {
     bool prevPathBeenSet = folderPath != "";
     if (prevPathBeenSet) {
       bool keepOpen = doCompileLoop();
-      if (!keepOpen) break;
+      if (!keepOpen)
+        break;
     } else {
       imguiLoop();
     }

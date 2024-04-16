@@ -210,6 +210,7 @@ public:
 
   void makeMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
+
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Recompile")) {
           std::exit(42);
@@ -287,6 +288,14 @@ public:
         }
         ImGui::EndMenu();
       }
+
+      ImGui::Text("        ");
+      ImGui::Text("Current Project");
+      ImGui::Text(std::format("[{}]", projectFolderpath).c_str());
+      ImGui::Text("   ");
+      ImGui::Text("Current Collection");
+      std::string currentCollectionPathText = getEditorData()["scene"];
+      ImGui::Text(std::format("[{}]", currentCollectionPathText).c_str());
 
       ImGui::EndMainMenuBar();
     }
@@ -496,8 +505,6 @@ public:
       // close
       ImGuiFileDialog::Instance()->Close();
     }
-
-    ImGui::Text(projectFolderpath.c_str());
 
     if (ImGui::Button("Create")) {
       Entity *newEntity = GameManager::createEntity("");
