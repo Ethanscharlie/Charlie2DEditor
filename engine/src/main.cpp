@@ -500,6 +500,8 @@ public:
         deserializeList(jsonData, false);
 
         writePrevProject();
+
+        std::exit(42);
       }
 
       // close

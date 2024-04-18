@@ -16,9 +16,7 @@
 * Remove "Scene" from entity serialization and add collection methods to engine
 * Combine basic datatypes into file and split up utils for methods and structs
 * Document Code
-* Move Watchdog to two classes
 
-* Recompile on open
 * Fix prevProject (Open as fs::path)
 
 * Add windows support <:[
