@@ -23,7 +23,7 @@ namespace fs = std::filesystem;
 const std::string copyFromPath = "/usr/local/share/engine/";
 const std::string enginePath = "/tmp/engine/";
 
-std::string folderPath;
+fs::path folderPath;
 
 class WindowSystem {
 public:
@@ -144,8 +144,7 @@ public:
 
 int attemptCompile(WindowSystem &windowSystem) {
   // Generate CMake cache with additional include directory
-  int cmakeResult = std::system(("cmake -DPROJECT_PATH=" + folderPath +
-                                 " -DCMAKE_INCLUDE_PATH=\"../include\" ..")
+  int cmakeResult = std::system(std::format("cmake -DPROJECT_PATH=\"{}\" -DCMAKE_INCLUDE_PATH=\"../include\" ..", folderPath.string())
                                     .c_str());
   if (cmakeResult == 0) {
     // splashLoop();
@@ -153,7 +152,7 @@ int attemptCompile(WindowSystem &windowSystem) {
     if (buildResult == 0) {
       // Run the executable
       windowSystem.closeWindow();
-      int runResult = std::system(("./index " + folderPath).c_str());
+      int runResult = std::system("./index");
       if (WIFEXITED(runResult)) {
         int exitCode = WEXITSTATUS(runResult);
         // Handle exit code
@@ -178,29 +177,6 @@ int attemptCompile(WindowSystem &windowSystem) {
   }
 
   return 1;
-}
-
-int doCompileLoop() {
-  // Iterate over header files and generate #include directives
-  for (const auto &entry : fs::directory_iterator(folderPath + "/src")) {
-    if (entry.is_regular_file() && entry.path().extension() == ".h") {
-      std::ofstream outFile(enginePath + "include/include_tmp.h",
-                            std::ios_base::app);
-      outFile << "#include " << entry.path().filename() << "" << std::endl;
-      outFile.close();
-    }
-  }
-
-  // Clean and create the build directory
-  fs::remove_all(enginePath + "build");
-  fs::create_directory(enginePath + "build");
-  if (chdir((enginePath + "build").c_str()) != 0) {
-    std::cerr << "Error: Unable to change directory." << std::endl;
-    // SDL_DestroyWindow(window);
-    // SDL_Quit();
-  }
-
-  // return attemptCompile();
 }
 
 WindowSystem windowSystem = WindowSystem();
@@ -231,19 +207,11 @@ int main() {
   includeFile.close(); // Create or truncate the file
 
   while (true) {
-    std::ifstream prevProjectFile(enginePath + "prevProject.txt");
-    if (prevProjectFile.is_open()) {
-      std::getline(prevProjectFile, folderPath);
-      prevProjectFile.close();
-    } else {
-      std::cerr << "Error: File not found :3" << std::endl;
-    }
-
-    folderPath = "/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/Fish2";
+    folderPath = "/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/Fish 2";
 
     bool prevPathBeenSet = folderPath != "";
     if (prevPathBeenSet) {
-      for (const auto &entry : fs::directory_iterator(folderPath + "/src")) {
+      for (const auto &entry : fs::directory_iterator(folderPath / "src")) {
         if (entry.is_regular_file() && entry.path().extension() == ".h") {
           std::ofstream outFile(enginePath + "include/include_tmp.h",
                                 std::ios_base::app);

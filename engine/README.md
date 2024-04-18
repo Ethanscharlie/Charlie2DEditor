@@ -17,6 +17,4 @@
 * Combine basic datatypes into file and split up utils for methods and structs
 * Document Code
 
-* Fix prevProject (Open as fs::path)
-
 * Add windows support <:[
