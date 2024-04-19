@@ -3,9 +3,8 @@
 
 ### TODO:
 * Add ui system to watchdog
-    * Make new project on engine_watchdog menu and remove temp project
-    * Add some kind of "loading..."
     * Add ability to compile to ( web, windows, and standard(linux) ) 
+    * Check for projects being valid 
 * Make better move tool
     * Fix move tool sizing
 * Remove Parent-Child and entityBox

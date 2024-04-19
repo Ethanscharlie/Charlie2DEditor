@@ -4,6 +4,7 @@ project(EngineWatchdog)
 # Add C++11 standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB_RECURSE IMGUI_SOURCES 
   ${PROJECT_SOURCE_DIR}/imgui/*.cpp 
@@ -29,7 +30,6 @@ target_include_directories(engine_watchdog PUBLIC
 
 target_link_libraries(engine_watchdog
   SDL2
-  # SDL2_ttf
   SDL2_image
   )
 
