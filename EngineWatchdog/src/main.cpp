@@ -26,6 +26,7 @@ const std::string copyFromPath = "/usr/local/share/engine/";
 const std::string enginePath = "/tmp/engine/";
 
 fs::path folderPath;
+bool firstCompile = true;
 
 std::string removeQuotes(const std::string &str) {
   if (!str.empty() && str.front() == '"' && str.back() == '"') {
@@ -229,13 +230,22 @@ public:
   }
 };
 
-int attemptCompile(WindowSystem &windowSystem) {
+int attemptCompile(WindowSystem &windowSystem, bool first = false) {
   // Generate CMake cache with additional include directory
-  int cmakeResult = std::system(
-      std::format(
-          "cmake -DPROJECT_PATH=\"{}\" -DCMAKE_INCLUDE_PATH=\"../include\" ..",
-          folderPath.string())
-          .c_str());
+  firstCompile = false;
+
+  std::string compileEditorFlag;
+  if (first) {
+    compileEditorFlag = "-DCOMPILE_EDITOR=ON";
+  } else {
+    compileEditorFlag = "-DCOMPILE_EDITOR=OFF";
+  }
+
+  int cmakeResult =
+      std::system(std::format("cmake -DPROJECT_PATH=\"{}\" "
+                              "-DCMAKE_INCLUDE_PATH=\"../include\" {} ..",
+                              folderPath.string(), compileEditorFlag)
+                      .c_str());
   if (cmakeResult == 0) {
     // splashLoop();
     int buildResult = std::system("cmake --build . && make");
@@ -262,10 +272,10 @@ int attemptCompile(WindowSystem &windowSystem) {
     return 0;
   }
 
-  if (chdir("..") != 0) {
-    std::cerr << "Error: Unable to change directory." << std::endl;
-  }
-
+  // if (chdir("..") != 0) {
+  //   std::cerr << "Error: Unable to change directory." << std::endl;
+  // }
+  //
   return 1;
 }
 
@@ -323,19 +333,21 @@ int main() {
       }
 
       // Clean and create the build directory
-      fs::remove_all(enginePath + "build");
-      fs::create_directory(enginePath + "build");
-      if (chdir((enginePath + "build").c_str()) != 0) {
-        std::cerr << "Error: Unable to change directory." << std::endl;
-        windowSystem.closeWindow();
-        SDL_Quit();
-        return 1;
+      // fs::remove_all(enginePath + "build");
+      if (!fs::exists(enginePath + "build")) {
+        fs::create_directory(enginePath + "build");
+        if (chdir((enginePath + "build").c_str()) != 0) {
+          std::cerr << "Error: Unable to change directory." << std::endl;
+          windowSystem.closeWindow();
+          SDL_Quit();
+          return 1;
+        }
       }
 
       windowSystem.createWindow();
       windowSystem.splashLoop();
 
-      bool keepOpen = attemptCompile(windowSystem);
+      bool keepOpen = attemptCompile(windowSystem, firstCompile);
       if (!keepOpen)
         break;
     } else {

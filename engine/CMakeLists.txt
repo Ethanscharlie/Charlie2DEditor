@@ -17,16 +17,23 @@ file(GLOB_RECURSE CHARLIE_SOURCES /home/ethanscharlie/Projects/Code/Github/charl
 file(GLOB_RECURSE IMGUI_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/imgui/*.cpp)
 
 option(FINAL_BUILD "Final project build" OFF)
+option(COMIPLE_EDITOR "Compile the editor and project" ON)
 
 # Define common source files
-set(COMMON_SOURCES
-    src/main.cpp
-    src/functionUtils.cpp
-    src/ImguiPanels.cpp
-    ${OBJECTS_SOURCES}
-    ${Game_SOURCES}
-    ${IMGUI_SOURCES}
-)
+if (COMIPLE_EDITOR) 
+  set(COMMON_SOURCES
+      src/main.cpp
+      src/functionUtils.cpp
+      src/ImguiPanels.cpp
+      ${OBJECTS_SOURCES}
+      ${Game_SOURCES}
+      ${IMGUI_SOURCES}
+  )
+else()
+  set(COMMON_SOURCES
+      ${Game_SOURCES}
+  )
+endif()
 
 if (EMSCRIPTEN)
   # Add additional sources specific to EMSCRIPTEN
