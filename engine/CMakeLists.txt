@@ -22,6 +22,7 @@ option(FINAL_BUILD "Final project build" OFF)
 set(COMMON_SOURCES
     src/main.cpp
     src/functionUtils.cpp
+    src/ImguiPanels.cpp
     ${OBJECTS_SOURCES}
     ${Game_SOURCES}
     ${IMGUI_SOURCES}
