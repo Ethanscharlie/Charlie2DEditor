@@ -16,18 +16,20 @@
 
 int main(int argc, char *argv[]) {
   projectFolderpath = PROJECT_PATH;
-  // projectFilepath =
-  //     std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
+  GameManager::init();
 
-  // GameManager::init();
-  //
-  // std::ifstream file("Project.ch2dscene");
-  // json jsonData = json::parse(file);
-  // file.close();
-  //
-  // deserializeList(jsonData, true);
-  //
-  // GameManager::doUpdateLoop();
+  std::ifstream editorDataFile(std::filesystem::path(projectFolderpath) /
+                               "EditorData.json");
+  json editorJsonData = json::parse(editorDataFile);
+  editorDataFile.close();
+
+  std::ifstream file(editorJsonData["scene"]);
+  json jsonData = json::parse(file);
+  file.close();
+
+  deserializeList(jsonData, true);
+
+  GameManager::doUpdateLoop();
   return 0;
 }
 
@@ -49,40 +51,13 @@ int main(int argc, char *argv[]) {
 #include <string>
 #include <typeindex>
 
+#include "functionUtils.h"
 #include "imguiTheme.h"
 
 json editorTempRunSave;
 bool inRunState = false;
 std::vector<Entity *> usedChildren;
 std::stringstream buffer;
-
-json serializeAllEntities() {
-  json entitiesListJson;
-  for (Entity *entity : GameManager::getAllObjects()) {
-    if (entity->tag[0] == '$')
-      continue;
-    entitiesListJson["Scene"][entity->tag].push_back(serialize(entity));
-  }
-
-  return entitiesListJson;
-}
-
-void writePrevProject() {
-  std::ofstream file("../prevProject.txt");
-  file << projectFolderpath << std::endl;
-  file.close();
-  std::cout << "Set prev path as " << projectFolderpath << "\n";
-}
-
-void changeSelectedEntity(Entity *entity) {
-  if (entity->tag[0] == '$')
-    return;
-  if (selectedEntity != nullptr) {
-    selectedEntity->remove<TransformEdit>();
-  }
-  selectedEntity = entity;
-  selectedEntity->add<TransformEdit>();
-}
 
 class ClickOnEntityListener : public ExtendedComponent {
 public:
@@ -127,32 +102,6 @@ public:
     file.close();
 
     deserializeList(jsonData, false);
-  }
-
-  void removeFolderContents(const std::string &folder) {
-    for (const auto &entry : std::filesystem::directory_iterator(folder)) {
-      if (entry.is_regular_file()) {
-        std::filesystem::remove(entry.path());
-      } else if (entry.is_directory()) {
-        removeFolderContents(entry.path().string());
-        std::filesystem::remove(entry.path());
-      }
-    }
-  }
-
-  void refreshAssets() {
-    removeFolderContents("img");
-
-    for (const auto &entry : std::filesystem::directory_iterator(
-             std::filesystem::path(projectFolderpath) / "img")) {
-      std::filesystem::copy(entry.path(), "img" / entry.path().filename());
-    }
-
-    ResourceManager::getInstance(GameManager::renderer).reloadAllTextures();
-
-    for (Sprite *sprite : GameManager::getComponents<Sprite>()) {
-      sprite->image = Image(sprite->image.path);
-    }
   }
 
   void makeEntityList() {
@@ -244,6 +193,11 @@ public:
           config.path = projectFolderpath;
           ImGuiFileDialog::Instance()->OpenDialog(
               "ChooseProject", "Choose File", nullptr, config);
+        }
+        if (ImGui::MenuItem("Export")) {
+          IGFD::FileDialogConfig config;
+          ImGuiFileDialog::Instance()->OpenDialog(
+              "ExportProject", "Choose Export Folder", nullptr, config);
         }
         if (ImGui::MenuItem("Exit")) {
           std::exit(1);
@@ -347,34 +301,6 @@ public:
     }
   }
 
-  json getEditorData() {
-    std::ifstream file(std::filesystem::path(projectFolderpath) /
-                       "EditorData.json");
-    json jsonData = json::parse(file);
-    file.close();
-    return jsonData;
-  }
-
-  void changeEditorData(json jsonData) {
-    std::ofstream file(std::filesystem::path(projectFolderpath) /
-                       "EditorData.json");
-    file << std::setw(2) << jsonData << std::endl;
-    file.close();
-  }
-
-  json getMainScene() {
-    std::ifstream file(getEditorData()["scene"]);
-    json jsonData = json::parse(file);
-    file.close();
-    return jsonData;
-  }
-
-  void changeMainScene(std::filesystem::path newScenePath) {
-    json newEditorData = getEditorData();
-    newEditorData["scene"] = newScenePath;
-    changeEditorData(newEditorData);
-  }
-
   bool setupDockspaces = true;
 
   void update() override {
@@ -475,7 +401,7 @@ public:
           entity->toDestroy = true;
         }
 
-        writePrevProject();
+        writePrevProject(projectFolderpath);
       }
 
       ImGuiFileDialog::Instance()->Close();
@@ -499,9 +425,22 @@ public:
         }
         deserializeList(jsonData, false);
 
-        writePrevProject();
+        writePrevProject(projectFolderpath);
 
         std::exit(42);
+      }
+
+      // close
+      ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGuiFileDialog::Instance()->Display(
+            "ExportProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        std::filesystem::path exportFolder =
+            ImGuiFileDialog::Instance()->GetCurrentPath();
+
+        compileForExport(exportFolder);
       }
 
       // close
@@ -644,20 +583,6 @@ public:
     SDL_RenderSetLogicalSize(GameManager::renderer,
                              GameManager::gameWindowSize.x,
                              GameManager::gameWindowSize.y);
-  }
-
-  std::string newlineInvertString(const std::string &input) {
-    std::istringstream iss(input);
-    std::vector<std::string> result;
-    std::string line;
-    while (std::getline(iss, line)) {
-      result.insert(result.begin(), line);
-    }
-    std::ostringstream oss;
-    for (const auto &str : result) {
-      oss << str << "\n";
-    }
-    return oss.str();
   }
 
   float sliderexample = 0;

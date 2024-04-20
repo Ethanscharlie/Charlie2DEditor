@@ -18,31 +18,27 @@ file(GLOB_RECURSE IMGUI_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie
 
 option(FINAL_BUILD "Final project build" OFF)
 
-if (EMSCRIPTEN) 
-  add_executable(index
+# Define common source files
+set(COMMON_SOURCES
     src/main.cpp
+    src/functionUtils.cpp
     ${OBJECTS_SOURCES}
     ${Game_SOURCES}
-    ${CHARLIE_SOURCES}
     ${IMGUI_SOURCES}
-  )
+)
+
+if (EMSCRIPTEN)
+  # Add additional sources specific to EMSCRIPTEN
+  list(APPEND COMMON_SOURCES ${CHARLIE_SOURCES})
 elseif(WIN32)
-  add_executable(index
-    src/main.cpp
-    ${OBJECTS_SOURCES}
-    ${Game_SOURCES}
-    ${BOSS_SOURCES}
-    ${CHARLIE_SOURCES}
-    ${IMGUI_SOURCES}
-  )
+  # Add additional sources specific to Windows
+  list(APPEND COMMON_SOURCES ${BOSS_SOURCES} ${CHARLIE_SOURCES})
 else()
-  add_executable(index
-    src/main.cpp
-    ${Game_SOURCES}
-    ${OBJECTS_SOURCES}
-    ${BOSS_SOURCES}
-  )
+  # Add additional sources for other platforms
+  list(APPEND COMMON_SOURCES ${BOSS_SOURCES})
 endif()
+
+add_executable(index ${COMMON_SOURCES})
 
 if(FINAL_BUILD)
   target_compile_definitions(index PRIVATE FINAL_BUILD)
