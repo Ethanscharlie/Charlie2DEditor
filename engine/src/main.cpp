@@ -1,13 +1,7 @@
 #include "imgui_internal.h"
 
 #include "Charlie2D.h"
-#include "ResourceManager.h"
-#include "imguiDataPanels.h"
 #include "include_tmp.h"
-#include "nlohmann/json.hpp"
-#include <charlie2D/ImGuiFileDialog.h>
-#include <complex>
-#include <filesystem>
 #include <sstream>
 
 #define PROJECT_PATH _PROJECT_PATH
@@ -15,15 +9,15 @@
 #ifdef FINAL_BUILD
 
 int main(int argc, char *argv[]) {
-  projectFolderpath = PROJECT_PATH;
+  std::filesystem::path projectFolderpath = PROJECT_PATH;
   GameManager::init();
 
-  std::ifstream editorDataFile(std::filesystem::path(projectFolderpath) /
-                               "EditorData.json");
+  std::ifstream editorDataFile("EditorData.json");
   json editorJsonData = json::parse(editorDataFile);
   editorDataFile.close();
 
-  std::ifstream file(editorJsonData["scene"]);
+  std::string scenePath = editorJsonData["scene"];
+  std::ifstream file(scenePath);
   json jsonData = json::parse(file);
   file.close();
 
@@ -38,14 +32,14 @@ int main(int argc, char *argv[]) {
 #include "Entity.h"
 #include "ExtendedComponent.h"
 #include "GameManager.h"
+#include "ImGuiFileDialog.h"
 #include "InputManager.h"
-#include "LDTKEntity.h"
 #include "Vector2f.h"
+#include "functionUtils.h"
 #include <string>
 
-#include "functionUtils.h"
-#include "imguiTheme.h"
 #include "ImguiPanels.h"
+#include "imguiTheme.h"
 
 class ClickOnEntityListener : public ExtendedComponent {
 public:

@@ -1,11 +1,13 @@
 #include "imgui_internal.h"
+
 #include "ImguiPanels.h"
 #include "Serializer.h"
 #include "functionUtils.h"
-#include <filesystem>
-#include <fstream>
-#include <format>
+#include "imgui.h"
 #include "move.h"
+#include <filesystem>
+#include <format>
+#include <fstream>
 
 bool EntitiesPanel::checkEntityIsEngine(Entity *entity) {
   if (entity->tag.size() > 0) {
@@ -25,7 +27,7 @@ bool EntitiesPanel::checkEntityIsEngine(std::string tag) {
   return false;
 }
 
-void EntitiesPanel::start()  {
+void EntitiesPanel::start() {
   entity->useLayer = true;
   entity->layer = 100;
 
@@ -127,10 +129,23 @@ void EntitiesPanel::makeMenuBar() {
         ImGuiFileDialog::Instance()->OpenDialog("ChooseProject", "Choose File",
                                                 nullptr, config);
       }
-      if (ImGui::MenuItem("Export")) {
-        IGFD::FileDialogConfig config;
-        ImGuiFileDialog::Instance()->OpenDialog(
-            "ExportProject", "Choose Export Folder", nullptr, config);
+      if (ImGui::BeginMenu("Export")) {
+        auto openExportFileDialog = []() {
+          IGFD::FileDialogConfig config;
+          ImGuiFileDialog::Instance()->OpenDialog(
+              "ExportProject", "Choose Export Folder", nullptr, config);
+        };
+
+        if (ImGui::MenuItem("Linux")) {
+          exportType = ExportTypes::Linux;
+          openExportFileDialog();
+        }
+
+        if (ImGui::MenuItem("Web")) {
+          exportType = ExportTypes::Web;
+          openExportFileDialog();
+        }
+        ImGui::EndMenu();
       }
       if (ImGui::MenuItem("Exit")) {
         std::exit(1);
@@ -234,7 +249,7 @@ void EntitiesPanel::makeTopRowButtons() {
   }
 }
 
-void EntitiesPanel::update()  {
+void EntitiesPanel::update() {
   SDL_RenderSetLogicalSize(GameManager::renderer,
                            GameManager::currentWindowSize.x,
                            GameManager::currentWindowSize.y);
@@ -370,7 +385,7 @@ void EntitiesPanel::update()  {
       std::filesystem::path exportFolder =
           ImGuiFileDialog::Instance()->GetCurrentPath();
 
-      compileForExport(exportFolder);
+      compileForExport(exportFolder, exportType);
     }
 
     // close

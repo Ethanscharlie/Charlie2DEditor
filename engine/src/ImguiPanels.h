@@ -16,6 +16,8 @@
 
 using json = nlohmann::json;
 
+enum class ExportTypes;
+
 class EntitiesPanel : public ExtendedComponent {
 public:
   bool checkEntityIsEngine(Entity *entity);
@@ -29,4 +31,5 @@ public:
 
 private:
   bool setupDockspaces = true;
+  ExportTypes exportType;
 };

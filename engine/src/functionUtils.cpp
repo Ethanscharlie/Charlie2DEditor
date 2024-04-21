@@ -1,11 +1,12 @@
+#include "imgui_internal.h"
+
 #include "functionUtils.h"
 // #include "imguiDataPanels.h"
+#include "ImGuiFileDialog.h"
 #include "move.h"
+#include "nlohmann/json.hpp"
 #include <filesystem>
 #include <format>
-#include "imgui_internal.h"
-#include "nlohmann/json.hpp"
-#include <charlie2D/ImGuiFileDialog.h>
 
 std::string projectFolderpath = "";
 Entity *selectedEntity = nullptr;
@@ -43,19 +44,37 @@ void changeSelectedEntity(Entity *entity) {
   selectedEntity->add<TransformEdit>();
 }
 
-int compileForExport(std::filesystem::path exportFolder) {
+int compileForExport(std::filesystem::path exportFolder,
+                     ExportTypes exportType) {
   int returnResult = 1;
 
   std::filesystem::path originalPath = std::filesystem::current_path();
   std::filesystem::current_path(exportFolder);
 
-  int cmakeResult = std::system(
-      std::format("cmake -DPROJECT_PATH=\"{}\" "
-                  "-DCMAKE_INCLUDE_PATH=\"../include\" -DFINAL_BUILD=ON {}",
-                  projectFolderpath, "/tmp/engine")
-          .c_str());
+  std::string cmakeGenerateBuildFilesCommand;
+  std::string cmakeBuildFilesCommand;
+  switch (exportType) {
+  case ExportTypes::Linux:
+    cmakeGenerateBuildFilesCommand =
+        std::format("cmake -DPROJECT_PATH=\"{}\" "
+                    "-DCMAKE_INCLUDE_PATH=\"../include\" -DFINAL_BUILD=ON {}",
+                    projectFolderpath, "/tmp/engine");
+    cmakeBuildFilesCommand = "cmake --build . && make";
+    break;
+  case ExportTypes::Windows:
+    break;
+  case ExportTypes::Web:
+    cmakeGenerateBuildFilesCommand =
+        std::format("emcmake cmake -DPROJECT_PATH=\"{}\" "
+                    "-DCMAKE_INCLUDE_PATH=\"../include\" -DFINAL_BUILD=ON {}",
+                    projectFolderpath, "/tmp/engine");
+    cmakeBuildFilesCommand = "emmake make";
+    break;
+  }
+
+  int cmakeResult = std::system(cmakeGenerateBuildFilesCommand.c_str());
   if (cmakeResult == 0) {
-    int buildResult = std::system("cmake --build . && make");
+    int buildResult = std::system(cmakeBuildFilesCommand.c_str());
     if (buildResult == 0) {
       std::cout << "Build Successful\n";
     } else {
@@ -101,22 +120,25 @@ void refreshAssets() {
 }
 
 json getEditorData() {
-  std::ifstream file(std::filesystem::path(projectFolderpath) /
-                     "EditorData.json");
+  std::string editorDataFilePath =
+      std::filesystem::path(projectFolderpath) / "EditorData.json";
+  std::ifstream file(editorDataFilePath);
   json jsonData = json::parse(file);
   file.close();
   return jsonData;
 }
 
 void changeEditorData(json jsonData) {
-  std::ofstream file(std::filesystem::path(projectFolderpath) /
-                     "EditorData.json");
+  std::string editorDataFilePath =
+      std::filesystem::path(projectFolderpath) / "EditorData.json";
+  std::ofstream file(editorDataFilePath);
   file << std::setw(2) << jsonData << std::endl;
   file.close();
 }
 
 json getMainScene() {
-  std::ifstream file(getEditorData()["scene"]);
+  std::string sceneFilePath = getEditorData()["scene"];
+  std::ifstream file(sceneFilePath);
   json jsonData = json::parse(file);
   file.close();
   return jsonData;

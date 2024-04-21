@@ -9,6 +9,8 @@ extern bool inRunState;
 extern std::vector<Entity *> usedChildren;
 extern std::stringstream buffer;
 
+enum class ExportTypes { Linux, Windows, Web };
+
 /**
  * @brief Serialize all entities in the GameManager to a JSON format.
  *
@@ -59,7 +61,8 @@ void changeSelectedEntity(Entity *entity);
  * compiled.
  * @return Returns 1 if the compilation for export is successful, 0 otherwise.
  */
-int compileForExport(std::filesystem::path exportFolder);
+int compileForExport(std::filesystem::path exportFolder,
+                     ExportTypes exportType);
 
 /**
  * @brief Recursively removes all files and directories within the specified
