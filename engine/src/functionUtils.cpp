@@ -20,7 +20,7 @@ json serializeAllEntities() {
   for (Entity *entity : GameManager::getAllObjects()) {
     if (entity->tag[0] == '$')
       continue;
-    entitiesListJson["Scene"][entity->tag].push_back(serialize(entity));
+    entitiesListJson[entity->tag].push_back(serialize(entity));
   }
 
   return entitiesListJson;

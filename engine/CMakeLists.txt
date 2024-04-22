@@ -13,34 +13,59 @@ set(CMAKE_CURRENT_BINARY_DIR ${CMAKE_BINARY_DIR}/obj)
 # get all source files
 file(GLOB_RECURSE Game_SOURCES ${PROJECT_PATH}/src/*.cpp)
 
-file(GLOB_RECURSE CHARLIE_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/source/*.cpp)
-file(GLOB_RECURSE IMGUI_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/imgui/*.cpp)
+# file(GLOB_RECURSE CHARLIE_SOURCES /home/ethanscharlie/Projects/Code/Github/charlie2d/source/*.cpp)
+
+set(CHARLIE2D_GITHUB_REPO_URL "https://github.com/Ethanscharlie/charlie2d.git")
+
+file(GLOB_RECURSE IMGUI_SOURCES 
+  ${PROJECT_SOURCE_DIR}/imgui/*.cpp 
+  )
 
 option(FINAL_BUILD "Final project build" OFF)
 option(COMIPLE_EDITOR "Compile the editor and project" ON)
 
 # Define common source files
-if (COMIPLE_EDITOR) 
+if (FINAL_BUILD) 
   set(COMMON_SOURCES
+    src/main.cpp
+    src/functionUtils.cpp
+    src/ImguiPanels.cpp
+    ${OBJECTS_SOURCES}
+    ${Game_SOURCES}
+    )
+else()
+  if (COMIPLE_EDITOR) 
+    set(COMMON_SOURCES
       src/main.cpp
       src/functionUtils.cpp
       src/ImguiPanels.cpp
       ${OBJECTS_SOURCES}
       ${Game_SOURCES}
       ${IMGUI_SOURCES}
-  )
-else()
-  set(COMMON_SOURCES
+      )
+  else()
+    set(COMMON_SOURCES
       ${Game_SOURCES}
-  )
+      )
+  endif()
+endif()
+
+if (EMSCRIPTEN OR WIN32)
+  execute_process(
+    COMMAND git clone ${CHARLIE2D_GITHUB_REPO_URL} "/tmp/charlie2Dsource"
+    # RESULT_VARIABLE GIT_CLONE_RESULT
+    )
+
+   file(GLOB_RECURSE CHARLIE_SOURCES /tmp/charlie2Dsource/source/*.cpp)
+   file(GLOB_RECURSE IMGUI_CHARLIE_SOURCES /tmp/charlie2Dsource/imgui/*.cpp)
 endif()
 
 if (EMSCRIPTEN)
   # Add additional sources specific to EMSCRIPTEN
-  list(APPEND COMMON_SOURCES ${CHARLIE_SOURCES})
+  list(APPEND COMMON_SOURCES ${CHARLIE_SOURCES} ${IMGUI_CHARLIE_SOURCES})
 elseif(WIN32)
   # Add additional sources specific to Windows
-  list(APPEND COMMON_SOURCES ${BOSS_SOURCES} ${CHARLIE_SOURCES})
+  list(APPEND COMMON_SOURCES ${CHARLIE_SOURCES} ${IMGUI_CHARLIE_SOURCES})
 else()
   # Add additional sources for other platforms
   list(APPEND COMMON_SOURCES ${BOSS_SOURCES})
