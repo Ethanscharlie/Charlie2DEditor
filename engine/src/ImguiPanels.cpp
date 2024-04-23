@@ -141,6 +141,11 @@ void EntitiesPanel::makeMenuBar() {
           openExportFileDialog();
         }
 
+        if (ImGui::MenuItem("Windows")) {
+          exportType = ExportTypes::Windows;
+          openExportFileDialog();
+        }
+
         if (ImGui::MenuItem("Web")) {
           exportType = ExportTypes::Web;
           openExportFileDialog();

@@ -62,6 +62,13 @@ int compileForExport(std::filesystem::path exportFolder,
     cmakeBuildFilesCommand = "cmake --build . && make";
     break;
   case ExportTypes::Windows:
+    cmakeGenerateBuildFilesCommand =
+        std::format("cmake -DPROJECT_PATH=\"{}\" "
+                    "-DCMAKE_INCLUDE_PATH=\"../include\" "
+                    "-DCMAKE_TOOLCHAIN_FILE=/home/ethanscharlie/TC-mingw.cmake "
+                    "-DFINAL_BUILD=ON {}",
+                    projectFolderpath, "/tmp/engine");
+    cmakeBuildFilesCommand = "make";
     break;
   case ExportTypes::Web:
     cmakeGenerateBuildFilesCommand =
@@ -120,7 +127,7 @@ void refreshAssets() {
 }
 
 json getEditorData() {
-  std::string editorDataFilePath =
+  std::filesystem::path editorDataFilePath =
       std::filesystem::path(projectFolderpath) / "EditorData.json";
   std::ifstream file(editorDataFilePath);
   json jsonData = json::parse(file);
@@ -129,7 +136,7 @@ json getEditorData() {
 }
 
 void changeEditorData(json jsonData) {
-  std::string editorDataFilePath =
+  std::filesystem::path editorDataFilePath =
       std::filesystem::path(projectFolderpath) / "EditorData.json";
   std::ofstream file(editorDataFilePath);
   file << std::setw(2) << jsonData << std::endl;
@@ -137,7 +144,7 @@ void changeEditorData(json jsonData) {
 }
 
 json getMainScene() {
-  std::string sceneFilePath = getEditorData()["scene"];
+  std::filesystem::path sceneFilePath = getEditorData()["scene"];
   std::ifstream file(sceneFilePath);
   json jsonData = json::parse(file);
   file.close();
@@ -251,8 +258,9 @@ void imguiDataPanel(PropertyData data) {
 
   else if (data.type == typeid(Image)) {
     Image *image = static_cast<Image *>(data.value);
-    std::string imagePath = image->path;
-    std::string prevImagePath = imagePath;
+    std::string imagePathString;
+    std::filesystem::path imagePath = image->path;
+    std::filesystem::path prevImagePath = imagePath;
 
     if (ImGui::Button("Open File Dialog")) {
       IGFD::FileDialogConfig config;
@@ -268,63 +276,66 @@ void imguiDataPanel(PropertyData data) {
         imagePath = ImGuiFileDialog::Instance()->GetFilePathName();
         imagePath = std::filesystem::absolute(imagePath).lexically_relative(
             projectFolderpath);
-        imagePath = imagePath.substr(3);
+        imagePathString = imagePath.string();
+        imagePath = imagePathString.substr(3);
       }
 
       // close
       ImGuiFileDialog::Instance()->Close();
     }
 
+    imagePathString = imagePath.string();
     ImGui::InputString(std::format("##{}images", data.name).c_str(),
-                       &imagePath);
+                       &imagePathString);
+    imagePath = imagePathString;
 
-    if (imagePath != prevImagePath) {
+    if (imagePath.string() != prevImagePath.string()) {
       std::cout << "New Image\n";
-      Image newImage = Image(imagePath);
+      Image newImage = Image(imagePath.string());
       *image = newImage;
     }
   }
 
-  else if (data.type == typeid(Font)) {
-    Font *font = static_cast<Font *>(data.value);
-    std::string fontPath = font->filepath;
-    std::string prevFontPath = fontPath;
-
-    if (ImGui::Button(std::format("Open File Dialog###{}fontselect", data.name)
-                          .c_str())) {
-      IGFD::FileDialogConfig config;
-      config.path = projectFolderpath + "/img";
-      ImGuiFileDialog::Instance()->OpenDialog("ChooseFont", "Choose File",
-                                              ".ttf", config);
-    }
-    // display
-    if (ImGuiFileDialog::Instance()->Display(
-            "ChooseFont", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
-      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-        fontPath = ImGuiFileDialog::Instance()->GetFilePathName();
-        fontPath = std::filesystem::absolute(fontPath).lexically_relative(
-            projectFolderpath);
-        fontPath = fontPath.substr(3);
-      }
-
-      // close
-      ImGuiFileDialog::Instance()->Close();
-    }
-
-    ImGui::InputString(std::format("##{}fontpath", data.name).c_str(),
-                       &fontPath);
-
-    int prevSize = font->size;
-
-    ImGui::InputInt(std::format("Size###{}fontsizein", data.name).c_str(),
-                    &font->size);
-
-    if (fontPath != prevFontPath || font->size != prevSize) {
-      std::cout << "New Font\n";
-      Font newFont = Font(fontPath, font->size);
-      *font = newFont;
-    }
-  }
+  // else if (data.type == typeid(Font)) {
+  //   Font *font = static_cast<Font *>(data.value);
+  //   std::string fontPath = font->filepath;
+  //   std::string prevFontPath = fontPath;
+  //
+  //   if (ImGui::Button(std::format("Open File Dialog###{}fontselect", data.name)
+  //                         .c_str())) {
+  //     IGFD::FileDialogConfig config;
+  //     config.path = projectFolderpath + "/img";
+  //     ImGuiFileDialog::Instance()->OpenDialog("ChooseFont", "Choose File",
+  //                                             ".ttf", config);
+  //   }
+  //   // display
+  //   if (ImGuiFileDialog::Instance()->Display(
+  //           "ChooseFont", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+  //     if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+  //       fontPath = ImGuiFileDialog::Instance()->GetFilePathName();
+  //       fontPath = std::filesystem::absolute(fontPath).lexically_relative(
+  //           projectFolderpath);
+  //       fontPath = fontPath.substr(3);
+  //     }
+  //
+  //     // close
+  //     ImGuiFileDialog::Instance()->Close();
+  //   }
+  //
+  //   ImGui::InputString(std::format("##{}fontpath", data.name).c_str(),
+  //                      &fontPath);
+  //
+  //   int prevSize = font->size;
+  //
+  //   ImGui::InputInt(std::format("Size###{}fontsizein", data.name).c_str(),
+  //                   &font->size);
+  //
+  //   if (fontPath != prevFontPath || font->size != prevSize) {
+  //     std::cout << "New Font\n";
+  //     Font newFont = Font(fontPath, font->size);
+  //     *font = newFont;
+  //   }
+  // }
 
   else if (data.type == typeid(Entity *)) {
     Entity **entityPtr = static_cast<Entity **>(data.value);

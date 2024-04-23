@@ -33,6 +33,19 @@ if (FINAL_BUILD)
     ${OBJECTS_SOURCES}
     ${Game_SOURCES}
     )
+
+  if (EMSCRIPTEN OR WIN32)
+    execute_process(
+      COMMAND git clone ${CHARLIE2D_GITHUB_REPO_URL} "/tmp/charlie2Dsource"
+      # RESULT_VARIABLE GIT_CLONE_RESULT
+      )
+
+    file(GLOB_RECURSE CHARLIE_SOURCES /tmp/charlie2Dsource/source/*.cpp)
+    file(GLOB_RECURSE IMGUI_CHARLIE_SOURCES /tmp/charlie2Dsource/imgui/*.cpp)
+
+    list(APPEND COMMON_SOURCES ${CHARLIE_SOURCES} ${IMGUI_CHARLIE_SOURCES})
+  endif()
+
 else()
   if (COMIPLE_EDITOR) 
     set(COMMON_SOURCES
@@ -50,27 +63,6 @@ else()
   endif()
 endif()
 
-if (EMSCRIPTEN OR WIN32)
-  execute_process(
-    COMMAND git clone ${CHARLIE2D_GITHUB_REPO_URL} "/tmp/charlie2Dsource"
-    # RESULT_VARIABLE GIT_CLONE_RESULT
-    )
-
-   file(GLOB_RECURSE CHARLIE_SOURCES /tmp/charlie2Dsource/source/*.cpp)
-   file(GLOB_RECURSE IMGUI_CHARLIE_SOURCES /tmp/charlie2Dsource/imgui/*.cpp)
-endif()
-
-if (EMSCRIPTEN)
-  # Add additional sources specific to EMSCRIPTEN
-  list(APPEND COMMON_SOURCES ${CHARLIE_SOURCES} ${IMGUI_CHARLIE_SOURCES})
-elseif(WIN32)
-  # Add additional sources specific to Windows
-  list(APPEND COMMON_SOURCES ${CHARLIE_SOURCES} ${IMGUI_CHARLIE_SOURCES})
-else()
-  # Add additional sources for other platforms
-  list(APPEND COMMON_SOURCES ${BOSS_SOURCES})
-endif()
-
 add_executable(index ${COMMON_SOURCES})
 
 if(FINAL_BUILD)
@@ -79,6 +71,7 @@ endif()
 
 if (WIN32) 
   set(sdl2_include_path "/usr/x86_64-w64-mingw32/include/SDL2")
+  file(COPY ${CMAKE_SOURCE_DIR}/dll/. DESTINATION ${CMAKE_BINARY_DIR})
 else()
   set(sdl2_include_path "/usr/include/SDL2")
 endif()
