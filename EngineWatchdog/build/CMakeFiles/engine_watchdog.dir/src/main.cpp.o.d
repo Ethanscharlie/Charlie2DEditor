@@ -1,5 +1,5 @@
 CMakeFiles/engine_watchdog.dir/src/main.cpp.o: \
- /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/src/main.cpp \
+ /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/src/main.cpp \
  /usr/include/stdc-predef.h /usr/include/nlohmann/json.hpp \
  /usr/include/c++/13.2.1/algorithm \
  /usr/include/c++/13.2.1/bits/stl_algobase.h \
@@ -434,9 +434,9 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: \
  /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_version.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
  /usr/include/SDL2/SDL_image.h /usr/include/SDL2/SDL.h \
- /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/include/imgui/ImGuiFileDialog.h \
- /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/include/imgui/ImGuiFileDialogConfig.h \
- /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/include/imgui/imgui.h \
+ /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/ImGuiFileDialog.h \
+ /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/ImGuiFileDialogConfig.h \
+ /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/imgui.h \
  /usr/include/imconfig.h /usr/include/c++/13.2.1/set \
  /usr/include/c++/13.2.1/bits/stl_set.h \
  /usr/include/c++/13.2.1/bits/stl_multiset.h /usr/include/c++/13.2.1/list \
@@ -468,5 +468,5 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: \
  /usr/include/c++/13.2.1/bits/this_thread_sleep.h /usr/include/sys/time.h \
  /usr/include/semaphore.h /usr/include/bits/semaphore.h \
  /usr/include/c++/13.2.1/thread /usr/include/c++/13.2.1/cfloat \
- /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/include/imgui/imgui_impl_sdl2.h \
- /home/ethanscharlie/Projects/Code/C++/CharlieGames/Charlie2DEditor/EngineWatchdog/include/imgui/imgui_impl_sdlrenderer2.h
+ /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/imgui_impl_sdl2.h \
+ /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/imgui_impl_sdlrenderer2.h
