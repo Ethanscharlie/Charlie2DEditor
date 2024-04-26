@@ -20,6 +20,8 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
 
+#include "sharedHeader.h"
+
 namespace fs = std::filesystem;
 
 const std::string copyFromPath = "/usr/local/share/engine/";
@@ -33,6 +35,13 @@ std::string removeQuotes(const std::string &str) {
     return str.substr(1, str.size() - 2);
   }
   return str;
+}
+
+void resetPrevPath() {
+  std::ofstream file("/tmp/engine/prevProject.txt");
+  file << "";
+  file.close();
+  folderPath = "";
 }
 
 class WindowSystem {
@@ -256,9 +265,15 @@ int attemptCompile(WindowSystem &windowSystem, bool first = false) {
       if (WIFEXITED(runResult)) {
         int exitCode = WEXITSTATUS(runResult);
         // Handle exit code
-        if (exitCode == 42) {
+        if (exitCode == EXTCODE_RECOMPILE) {
           std::cout << "Restarting the editor..." << std::endl;
-        } else {
+        }
+
+        else if (exitCode == EXTCODE_BAD_PROJECT_FOLDER) {
+          resetPrevPath();
+        }
+
+        else {
           std::cout << "Exiting the editor." << std::endl;
           return 0;
         }
@@ -323,10 +338,16 @@ int main() {
     bool prevPathBeenSet = folderPath != "";
     if (prevPathBeenSet) {
       fs::path projectCodePath = fs::path(removeQuotes(folderPath)) / "src";
+      if (!fs::exists(projectCodePath)) {
+        resetPrevPath();
+        continue;
+      }
+
       for (const auto &entry : fs::directory_iterator(projectCodePath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".h") {
           std::ofstream outFile(enginePath + "include/include_tmp.h",
                                 std::ios_base::app);
+          
           outFile << "#include " << entry.path().filename() << "" << std::endl;
           outFile.close();
         }

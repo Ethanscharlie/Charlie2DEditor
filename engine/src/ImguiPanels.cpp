@@ -5,6 +5,7 @@
 #include "functionUtils.h"
 #include "imgui.h"
 #include "move.h"
+#include "sharedHeader.h"
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -364,20 +365,30 @@ void EntitiesPanel::update() {
 
       std::ifstream file(std::filesystem::path(projectFolderpath) /
                          getEditorData()["scene"]);
-      json jsonData = json::parse(file);
-      file.close();
+      if (!file.is_open())
+        std::exit(EXTCODE_BAD_PROJECT_FOLDER);
 
-      selectedEntity = nullptr;
-      for (Entity *entity : GameManager::getAllObjects()) {
-        if (checkEntityIsEngine(entity))
-          continue;
-        entity->toDestroy = true;
+      try {
+        json jsonData = json::parse(file);
+
+        selectedEntity = nullptr;
+        for (Entity *entity : GameManager::getAllObjects()) {
+          if (checkEntityIsEngine(entity))
+            continue;
+          entity->toDestroy = true;
+        }
+
+        deserializeList(jsonData, false);
+        writePrevProject(projectFolderpath);
+
+        std::exit(ExitCode_Recompile);
+      } catch (const std::exception &e) {
+        // Handle JSON parsing error
+        std::cerr << "Error opening project " << e.what() << std::endl;
+        std::exit(EXTCODE_BAD_PROJECT_FOLDER);
       }
-      deserializeList(jsonData, false);
 
-      writePrevProject(projectFolderpath);
-
-      std::exit(42);
+      file.close();
     }
 
     // close

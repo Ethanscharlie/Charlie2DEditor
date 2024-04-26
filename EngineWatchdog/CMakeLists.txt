@@ -25,6 +25,7 @@ endif()
 target_include_directories(engine_watchdog PUBLIC
   ${sdl2_include_path}
   /usr/include/nlohmann
+  ${PROJECT_SOURCE_DIR}/../shared
   ${PROJECT_SOURCE_DIR}/include/imgui
   )
 

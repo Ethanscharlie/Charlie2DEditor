@@ -2132,6 +2132,7 @@ CMakeFiles/engine_watchdog.dir/imgui/imgui_widgets.cpp.o: /home/ethanscharlie/Pr
   /usr/lib/gcc/x86_64-pc-linux-gnu/13.2.1/include/xtestintrin.h
 
 CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/src/main.cpp \
+  /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/shared/sharedHeader.h \
   /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/ImGuiFileDialog.h \
   /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/ImGuiFileDialogConfig.h \
   /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/include/imgui/imgui.h \
@@ -2817,6 +2818,8 @@ CMakeFiles/engine_watchdog.dir/src/main.cpp.o: /home/ethanscharlie/Projects/Code
 /usr/include/c++/13.2.1/bits/fs_ops.h:
 
 /usr/include/c++/13.2.1/bits/forward_list.tcc:
+
+/home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/shared/sharedHeader.h:
 
 /home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/EngineWatchdog/src/main.cpp:
 

@@ -84,6 +84,7 @@ target_include_directories(index PUBLIC
     /usr/local/include/charlie2D
     ${PROJECT_SOURCE_DIR}/include 
     ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/../shared
 )
 
 

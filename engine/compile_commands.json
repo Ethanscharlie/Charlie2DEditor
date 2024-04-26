@@ -1,7 +1,7 @@
 [
 {
   "directory": "/tmp/engine/build",
-  "command": "/usr/bin/c++ -D_PROJECT_PATH=\\\"/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/testGame\\\" -I/usr/include/SDL2 -I/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/testGame/src -I/usr/include/nlohmann -I/usr/local/include/charlie2D -I/tmp/engine/include -I/tmp/engine/src/Bosses -I/tmp/engine/src -std=gnu++20 -o CMakeFiles/index.dir/src/main.cpp.o -c /tmp/engine/src/main.cpp",
+  "command": "/usr/bin/c++ -D_PROJECT_PATH=\\\"/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/testGame\\\" -I/home/ethanscharlie/Projects/Code/C++/Charlie2DEditor/engine/shared -I/usr/include/SDL2 -I/home/ethanscharlie/Projects/Code/C++/CharlieGamesv2/testGame/src -I/usr/include/nlohmann -I/usr/local/include/charlie2D -I/tmp/engine/include -I/tmp/engine/src/Bosses -I/tmp/engine/src -std=gnu++20 -o CMakeFiles/index.dir/src/main.cpp.o -c /tmp/engine/src/main.cpp",
   "file": "/tmp/engine/src/main.cpp",
   "output": "CMakeFiles/index.dir/src/main.cpp.o"
 }

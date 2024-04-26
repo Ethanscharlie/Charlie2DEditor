@@ -3,7 +3,6 @@
 
 ### TODO:
 * Add ui system to watchdog
-    * Add ability to compile to ( web, windows, and standard(linux) ) 
     * Check for projects being valid 
 * Make better move tool
     * Fix move tool sizing
