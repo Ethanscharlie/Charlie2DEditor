@@ -98,7 +98,7 @@ void EntitiesPanel::makeMenuBar() {
 
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Recompile")) {
-        std::exit(42);
+        std::exit(EXTCODE_RECOMPILE);
       }
       if (ImGui::MenuItem("Refresh Assets")) {
         refreshAssets();
@@ -165,10 +165,10 @@ void EntitiesPanel::makeMenuBar() {
           inRunState = true;
           Camera::resetCamera();
           selectedEntity = nullptr;
-          for (TransformEdit *component :
-               GameManager::getComponents<TransformEdit>()) {
-            component->entity->remove<TransformEdit>();
-          }
+          // for (TransformEdit *component :
+          //      GameManager::getComponents<TransformEdit>()) {
+          //   component->entity->remove<TransformEdit>();
+          // }
 
           editorTempRunSave = serializeAllEntities();
 
@@ -381,7 +381,7 @@ void EntitiesPanel::update() {
         deserializeList(jsonData, false);
         writePrevProject(projectFolderpath);
 
-        std::exit(ExitCode_Recompile);
+        std::exit(EXTCODE_RECOMPILE);
       } catch (const std::exception &e) {
         // Handle JSON parsing error
         std::cerr << "Error opening project " << e.what() << std::endl;

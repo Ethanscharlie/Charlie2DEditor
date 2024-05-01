@@ -2,8 +2,6 @@
 #### The Offical Editor of Charlie2D!
 
 ### TODO:
-* Add ui system to watchdog
-    * Check for projects being valid 
 * Make better move tool
     * Fix move tool sizing
 * Remove Parent-Child and entityBox

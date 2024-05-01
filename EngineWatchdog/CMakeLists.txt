@@ -37,6 +37,7 @@ target_link_libraries(engine_watchdog
 set(EDITOR_DIRECTORY "${CMAKE_SOURCE_DIR}/../engine")
 file(REMOVE_RECURSE "/usr/local/share/engine")
 install(DIRECTORY ${EDITOR_DIRECTORY} DESTINATION /usr/local/share)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/../shared" DESTINATION /usr/local/share/engine)
 
 install(TARGETS engine_watchdog
   RUNTIME DESTINATION bin

@@ -33,15 +33,15 @@ void writePrevProject(std::filesystem::path projectFolderpath) {
   std::cout << "Set prev path as " << projectFolderpath << "\n";
 }
 
-class TransformEdit;
+// class TransformEdit;
 void changeSelectedEntity(Entity *entity) {
   if (entity->tag[0] == '$')
     return;
   if (selectedEntity != nullptr) {
-    selectedEntity->remove<TransformEdit>();
+    // selectedEntity->remove<TransformEdit>();
   }
   selectedEntity = entity;
-  selectedEntity->add<TransformEdit>();
+  // selectedEntity->add<TransformEdit>();
 }
 
 int compileForExport(std::filesystem::path exportFolder,

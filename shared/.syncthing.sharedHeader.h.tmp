@@ -1,4 +1,0 @@
-enum class ExitCode {
-  Recompile = 42,
-  BadProjectFolder = 40
-};

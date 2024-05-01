@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
 
 #include "ImguiPanels.h"
 #include "imguiTheme.h"
+#include "move2.h"
 
 class ClickOnEntityListener : public ExtendedComponent {
 public:
@@ -85,6 +86,8 @@ private:
   Vector2f mouseStartOnHold;
 };
 
+class MoveTool;
+
 int main(int argc, char *argv[]) {
   std::cout.rdbuf(buffer.rdbuf());
 
@@ -98,6 +101,7 @@ int main(int argc, char *argv[]) {
 
   GameManager::createEntity("$EntitiesPanel")->add<EntitiesPanel>();
   GameManager::createEntity("$CameraMove")->add<CameraMover>();
+  GameManager::createEntity("$MoveTool")->add<MoveTool>();
 
   GameManager::doUpdateLoop();
   return 0;

@@ -52,6 +52,7 @@ else()
       src/main.cpp
       src/functionUtils.cpp
       src/ImguiPanels.cpp
+      src/move2.cpp
       ${OBJECTS_SOURCES}
       ${Game_SOURCES}
       ${IMGUI_SOURCES}
@@ -84,7 +85,7 @@ target_include_directories(index PUBLIC
     /usr/local/include/charlie2D
     ${PROJECT_SOURCE_DIR}/include 
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/../shared
+    ${CMAKE_SOURCE_DIR}/shared
 )
 
 

@@ -347,7 +347,7 @@ int main() {
         if (entry.is_regular_file() && entry.path().extension() == ".h") {
           std::ofstream outFile(enginePath + "include/include_tmp.h",
                                 std::ios_base::app);
-          
+
           outFile << "#include " << entry.path().filename() << "" << std::endl;
           outFile.close();
         }
@@ -357,12 +357,13 @@ int main() {
       // fs::remove_all(enginePath + "build");
       if (!fs::exists(enginePath + "build")) {
         fs::create_directory(enginePath + "build");
-        if (chdir((enginePath + "build").c_str()) != 0) {
-          std::cerr << "Error: Unable to change directory." << std::endl;
-          windowSystem.closeWindow();
-          SDL_Quit();
-          return 1;
-        }
+      }
+
+      if (chdir((enginePath + "build").c_str()) != 0) {
+        std::cerr << "Error: Unable to change directory." << std::endl;
+        windowSystem.closeWindow();
+        SDL_Quit();
+        return 1;
       }
 
       windowSystem.createWindow();
