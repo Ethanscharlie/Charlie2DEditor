@@ -154,7 +154,7 @@ void EntitiesPanel::makeMenuBar() {
         ImGui::EndMenu();
       }
       if (ImGui::MenuItem("Exit")) {
-        std::exit(1);
+        std::exit(EXTCODE_EXIT);
       }
       ImGui::EndMenu();
     }

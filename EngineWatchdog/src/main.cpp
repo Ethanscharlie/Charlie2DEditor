@@ -26,9 +26,25 @@ namespace fs = std::filesystem;
 
 const std::string copyFromPath = "/usr/local/share/engine/";
 const std::string enginePath = "/tmp/engine/";
+std::stringstream buffer;
 
 fs::path folderPath;
 bool firstCompile = true;
+bool debugMode = false;
+
+std::string newlineInvertString(const std::string &input) {
+  std::istringstream iss(input);
+  std::vector<std::string> result;
+  std::string line;
+  while (std::getline(iss, line)) {
+    result.insert(result.begin(), line);
+  }
+  std::ostringstream oss;
+  for (const auto &str : result) {
+    oss << str << "\n";
+  }
+  return oss.str();
+}
 
 std::string removeQuotes(const std::string &str) {
   if (!str.empty() && str.front() == '"' && str.back() == '"') {
@@ -206,6 +222,57 @@ public:
     SDL_RenderPresent(renderer);
   }
 
+  void imguiDebugLoop() {
+    ImGui_ImplSDLRenderer2_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      ImGui_ImplSDL2_ProcessEvent(&event);
+      switch (event.type) {
+      case SDL_QUIT:
+        closeWindow();
+        std::exit(0);
+        break;
+      }
+    }
+
+    SDL_Rect renderRect = {0, 0, 800, 600};
+    SDL_RenderCopy(renderer, texture, nullptr, &renderRect);
+
+    ImGui::NewFrame();
+    ImGui::SetNextWindowPos(ImVec2(50, 50));
+    ImGui::SetNextWindowSize(ImVec2(700, 500));
+    ImGui::Begin("Fixed Panel", nullptr,
+                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoTitleBar);
+
+    if (ImGui::Button("Retry")) {
+      std::cout << "Retry\n";
+      debugMode = false;
+    }
+
+    std::ifstream gdbFile("/tmp/engine/build/gdb.txt"); // Open the file
+    std::stringstream gdbText;
+    gdbText << gdbFile.rdbuf();
+    gdbFile.close();
+
+    std::ifstream cmakeFile("/tmp/engine/build/cmakeout.txt"); // Open the file
+    std::stringstream cmakeText;
+    cmakeText << cmakeFile.rdbuf();
+    cmakeFile.close();
+
+    ImGui::Text(gdbText.str().c_str());
+    ImGui::Text(cmakeText.str().c_str());
+    ImGui::Text(newlineInvertString(buffer.str()).c_str());
+
+    ImGui::End();
+    ImGui::Render();
+    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+
+    SDL_RenderPresent(renderer);
+  }
+
   void splashLoop() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -250,53 +317,62 @@ int attemptCompile(WindowSystem &windowSystem, bool first = false) {
     compileEditorFlag = "-DCOMPILE_EDITOR=OFF";
   }
 
-  int cmakeResult =
-      std::system(std::format("cmake -DPROJECT_PATH=\"{}\" "
-                              "-DCMAKE_INCLUDE_PATH=\"../include\" {} ..",
-                              folderPath.string(), compileEditorFlag)
-                      .c_str());
-  if (cmakeResult == 0) {
-    // splashLoop();
-    int buildResult = std::system("cmake --build . && make");
-    if (buildResult == 0) {
-      // Run the executable
-      windowSystem.closeWindow();
-      int runResult = std::system("./index");
-      if (WIFEXITED(runResult)) {
-        int exitCode = WEXITSTATUS(runResult);
-        // Handle exit code
-        if (exitCode == EXTCODE_RECOMPILE) {
-          std::cout << "Restarting the editor..." << std::endl;
-        }
+  debugMode = false;
 
-        else if (exitCode == EXTCODE_BAD_PROJECT_FOLDER) {
-          resetPrevPath();
-        }
-
-        else {
-          std::cout << "Exiting the editor." << std::endl;
-          return 0;
-        }
-      }
-    } else {
-      std::cerr << "Build failed, exiting the editor." << std::endl;
-      return 0;
-    }
-  } else {
-    std::cerr << "CMake configuration failed, exiting the editor." << std::endl;
-    return 0;
+  int cmakeResult = std::system(
+      std::format("cmake -DPROJECT_PATH=\"{}\" "
+                  "-DCMAKE_INCLUDE_PATH=\"../include\" {} .. >> cmakeout.txt",
+                  folderPath.string(), compileEditorFlag)
+          .c_str());
+  if (cmakeResult != 0) {
+    windowSystem.createWindow();
+    debugMode = true;
+    return 1;
+  }
+  // splashLoop();
+  int buildResult = std::system("stdbuf -oL -eL make > cmakeout.txt 2>&1");
+  if (buildResult != 0) {
+    windowSystem.createWindow();
+    debugMode = true;
+    return 1;
   }
 
-  // if (chdir("..") != 0) {
-  //   std::cerr << "Error: Unable to change directory." << std::endl;
-  // }
-  //
+  // Run the executable
+  windowSystem.closeWindow();
+  int runResult =
+      std::system("gdb -batch -ex 'set logging on' "
+                  "-ex \"run\" -ex \"bt\" -ex \"quit\" --args index");
+  if (true) {
+    int exitCode = WEXITSTATUS(runResult);
+    std::cout << "EXIT CODE " << exitCode << std::endl;
+    // Handle exit code
+    if (exitCode == EXTCODE_RECOMPILE) {
+      std::cout << "Restarting the editor..." << std::endl;
+    }
+
+    else if (exitCode == EXTCODE_BAD_PROJECT_FOLDER) {
+      resetPrevPath();
+    }
+
+    else if (exitCode == EXTCODE_EXIT) {
+      std::cout << "Exiting the editor." << std::endl;
+      return 0;
+    }
+
+    else {
+      windowSystem.createWindow();
+      debugMode = true;
+      return 1;
+    }
+  }
   return 1;
 }
 
 WindowSystem windowSystem = WindowSystem();
 
 int main() {
+  std::cout.rdbuf(buffer.rdbuf());
+
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError()
               << std::endl;
@@ -336,7 +412,7 @@ int main() {
     // 2";
 
     bool prevPathBeenSet = folderPath != "";
-    if (prevPathBeenSet) {
+    if (prevPathBeenSet && !debugMode) {
       fs::path projectCodePath = fs::path(removeQuotes(folderPath)) / "src";
       if (!fs::exists(projectCodePath)) {
         resetPrevPath();
@@ -372,7 +448,13 @@ int main() {
       bool keepOpen = attemptCompile(windowSystem, firstCompile);
       if (!keepOpen)
         break;
-    } else {
+    }
+
+    else if (debugMode) {
+      windowSystem.imguiDebugLoop();
+    }
+
+    else {
       windowSystem.imguiLoop();
     }
   }

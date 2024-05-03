@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
 #include "Vector2f.h"
 #include "functionUtils.h"
 #include <string>
+#include "sharedHeader.h"
 
 #include "ImguiPanels.h"
 #include "imguiTheme.h"
@@ -89,7 +90,7 @@ private:
 class MoveTool;
 
 int main(int argc, char *argv[]) {
-  std::cout.rdbuf(buffer.rdbuf());
+  // std::cout.rdbuf(buffer.rdbuf());
 
   projectFolderpath = PROJECT_PATH;
   // projectFilepath =
@@ -104,6 +105,8 @@ int main(int argc, char *argv[]) {
   GameManager::createEntity("$MoveTool")->add<MoveTool>();
 
   GameManager::doUpdateLoop();
+
+  std::exit(EXTCODE_EXIT);
   return 0;
 }
 
