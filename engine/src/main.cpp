@@ -47,7 +47,7 @@ class ClickOnEntityListener : public ExtendedComponent {
 public:
   void update() override {
     Vector2f mousePos = InputManager::getMouseWorldPosition();
-    Box box = entity->box->getBox();
+    Box box = entity->box;
     if (InputManager::rightClick && mousePos.x < box.getRight() &&
         mousePos.x > box.getLeft() && mousePos.y > box.getTop() &&
         mousePos.y < box.getBottom()) {
@@ -77,7 +77,7 @@ public:
       }
 
       if (InputManager::keys[SDLK_f] && selectedEntity != nullptr) {
-        Camera::setPosition(selectedEntity->box->getBox().getCenter());
+        Camera::setPosition(selectedEntity->box.getCenter());
       }
     }
   }
@@ -106,8 +106,8 @@ int main(int argc, char *argv[]) {
 
   GameManager::doUpdateLoop();
 
-  std::exit(EXTCODE_EXIT);
-  return 0;
+  setOutputCode(EXTCODE_EXIT);
+  return EXTCODE_EXIT;
 }
 
 #endif

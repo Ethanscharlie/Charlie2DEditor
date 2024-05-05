@@ -3,10 +3,10 @@
 #include "functionUtils.h"
 // #include "imguiDataPanels.h"
 #include "ImGuiFileDialog.h"
-#include "move.h"
 #include "nlohmann/json.hpp"
 #include <filesystem>
 #include <format>
+#include <fstream>
 
 std::string projectFolderpath = "";
 Entity *selectedEntity = nullptr;
@@ -373,4 +373,11 @@ void imguiDataPanel(PropertyData data) {
       ImGui::EndCombo();
     }
   }
+}
+
+void setOutputCode(int code) {
+  std::ofstream file("outputCode.txt");
+  file << std::to_string(code);
+  file.close();
+  std::exit(0);
 }

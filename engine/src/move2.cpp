@@ -40,7 +40,7 @@ MoveTool::~MoveTool() {
 void MoveTool::start() { entity->layer = 90; }
 
 void MoveTool::drawBoxLine(Box box, std::array<Uint8, 3> color, Uint8 alpha) {
-  Vector2f renderPos = box.position - Camera::getPosition();
+  Vector2f renderPos = box.position - Camera::position;
   renderPos = renderPos * Camera::getScale();
   renderPos += GameManager::gameWindowSize / 2;
   Box renderBox = box;
@@ -58,7 +58,7 @@ void MoveTool::drawBox(std::array<bool, 4> selectedSides) {
   int scaledStroke = stroke / Camera::getScale();
 
   // Get the selectedEntity's bounding box
-  Box selectedEntityBox = selectedEntity->box->getBox();
+  Box selectedEntityBox = selectedEntity->box;
 
   // Calculate the positions and sizes of each side of the box
   int leftStroke = scaledStroke;
@@ -181,53 +181,53 @@ void MoveTool::handleSideDrag(LockDirection lockDirection, bool *resetCursor,
 
     if (InputManager::mouseHeld) {
       if (lock != lockDirection)
-        tempResizeBox = selectedEntity->box->getBox();
+        tempResizeBox = selectedEntity->box;
       lock = lockDirection;
 
       bool isSE = lock == LockDirection::Bottom || lock == LockDirection::Right;
 
       Vector2f tempCorner;
       if (isSE) {
-        tempCorner = selectedEntity->box->getPosition();
+        tempCorner = selectedEntity->box.position;
       } else {
-        tempCorner = selectedEntity->box->getBox().getBottomRightCorner();
+        tempCorner = selectedEntity->box.getBottomRightCorner();
       }
 
       if (InputManager::checkInput("dash")) {
         if (multiLock != lockDirection) {
           multiLock = lockDirection;
-          tempResizeBox = selectedEntity->box->getBox();
+          tempResizeBox = selectedEntity->box;
         }
 
         switch (lock) {
         case LockDirection::Left:
-          selectedEntity->box->setScale(
+          selectedEntity->box.setScale(
               {(tempResizeBox.position.x -
                 InputManager::getMouseWorldPosition().x) *
                        2 +
                    tempResizeBox.size.x,
-               selectedEntity->box->getSize().y});
+               selectedEntity->box.size.y});
 
           break;
         case LockDirection::Right:
-          selectedEntity->box->setScale(
+          selectedEntity->box.setScale(
               {InputManager::getMouseWorldPosition().x -
-                   selectedEntity->box->getPosition().x,
-               selectedEntity->box->getSize().y});
+                   selectedEntity->box.position.x,
+               selectedEntity->box.size.y});
           break;
         case LockDirection::Top:
-          selectedEntity->box->setScale(
-              {selectedEntity->box->getSize().x,
+          selectedEntity->box.setScale(
+              {selectedEntity->box.size.x,
                (tempResizeBox.position.y -
                 InputManager::getMouseWorldPosition().y) *
                        2 +
                    tempResizeBox.size.y});
           break;
         case LockDirection::Bottom:
-          selectedEntity->box->setScale(
-              {selectedEntity->box->getSize().x,
+          selectedEntity->box.setScale(
+              {selectedEntity->box.size.x,
                InputManager::getMouseWorldPosition().y -
-                   selectedEntity->box->getPosition().y});
+                   selectedEntity->box.position.y});
           break;
         case LockDirection::None:
           break;
@@ -237,7 +237,7 @@ void MoveTool::handleSideDrag(LockDirection lockDirection, bool *resetCursor,
       else if (keyboardState[SDL_SCANCODE_LCTRL]) {
         if (aspectLockLock != lockDirection) {
           aspectLockLock = lockDirection;
-          tempResizeBox = selectedEntity->box->getBox();
+          tempResizeBox = selectedEntity->box;
         }
 
         float newSize;
@@ -247,13 +247,13 @@ void MoveTool::handleSideDrag(LockDirection lockDirection, bool *resetCursor,
                      InputManager::getMouseWorldPosition().x) *
                         2 +
                     tempResizeBox.size.x;
-          selectedEntity->box->setScale(
+          selectedEntity->box.setScale(
               {newSize, newSize / tempResizeBox.size.x * tempResizeBox.size.y});
           break;
         case LockDirection::Right:
           newSize = InputManager::getMouseWorldPosition().x -
-                    selectedEntity->box->getPosition().x;
-          selectedEntity->box->setScale(
+                    selectedEntity->box.position.x;
+          selectedEntity->box.setScale(
               {newSize, newSize / tempResizeBox.size.x * tempResizeBox.size.y});
           break;
         case LockDirection::Top:
@@ -261,13 +261,13 @@ void MoveTool::handleSideDrag(LockDirection lockDirection, bool *resetCursor,
                      InputManager::getMouseWorldPosition().y) *
                         2 +
                     tempResizeBox.size.y;
-          selectedEntity->box->setScale(
+          selectedEntity->box.setScale(
               {newSize / tempResizeBox.size.y * tempResizeBox.size.x, newSize});
           break;
         case LockDirection::Bottom:
           newSize = InputManager::getMouseWorldPosition().y -
-                    selectedEntity->box->getPosition().y;
-          selectedEntity->box->setScale(
+                    selectedEntity->box.position.y;
+          selectedEntity->box.setScale(
               {newSize / tempResizeBox.size.y * tempResizeBox.size.x, newSize});
           break;
         case LockDirection::None:
@@ -278,37 +278,36 @@ void MoveTool::handleSideDrag(LockDirection lockDirection, bool *resetCursor,
       else {
         switch (lock) {
         case LockDirection::Left:
-          selectedEntity->box->setSize(
-              {(tempResizeBox.position.x -
-                InputManager::getMouseWorldPosition().x + tempResizeBox.size.x),
-               selectedEntity->box->getSize().y});
+          selectedEntity->box.size = {(tempResizeBox.position.x -
+                                       InputManager::getMouseWorldPosition().x +
+                                       tempResizeBox.size.x),
+                                      selectedEntity->box.size.y};
           break;
         case LockDirection::Right:
-          selectedEntity->box->setSize(
-              {mousePosition.x - tempResizeBox.position.x,
-               selectedEntity->box->getSize().y});
+          selectedEntity->box.size = {mousePosition.x -
+                                          tempResizeBox.position.x,
+                                      selectedEntity->box.size.y};
           break;
         case LockDirection::Top:
-          selectedEntity->box->setSize(
-              {selectedEntity->box->getSize().x,
-               (tempResizeBox.position.y -
-                InputManager::getMouseWorldPosition().y +
-                tempResizeBox.size.y)});
+          selectedEntity->box.size = {selectedEntity->box.size.x,
+                                      (tempResizeBox.position.y -
+                                       InputManager::getMouseWorldPosition().y +
+                                       tempResizeBox.size.y)};
           break;
         case LockDirection::Bottom:
-          selectedEntity->box->setSize(
-              {selectedEntity->box->getSize().x,
-               mousePosition.y - tempResizeBox.position.y});
+          selectedEntity->box.size = {selectedEntity->box.size.x,
+                                      mousePosition.y -
+                                          tempResizeBox.position.y};
           break;
         case LockDirection::None:
           break;
         }
 
         if (isSE) {
-          selectedEntity->box->setPosition(tempCorner);
+          selectedEntity->box.position = (tempCorner);
         } else {
-          selectedEntity->box->setPosition(tempCorner -
-                                           selectedEntity->box->getSize());
+          selectedEntity->box.position =
+              (tempCorner - selectedEntity->box.size);
         }
       }
     }
@@ -323,8 +322,8 @@ void MoveTool::update(float deltatime) {
   const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
   Box insideBox;
-  insideBox.position = selectedEntity->box->getBox().position + insideBoxMargin;
-  insideBox.size = selectedEntity->box->getBox().size - insideBoxMargin * 2;
+  insideBox.position = selectedEntity->box.position + insideBoxMargin;
+  insideBox.size = selectedEntity->box.size - insideBoxMargin * 2;
 
   bool resetCursor = true;
 
@@ -335,14 +334,14 @@ void MoveTool::update(float deltatime) {
     resetCursor = false;
 
     if (InputManager::checkInput("fire")) {
-      tempMouseOffset = selectedEntity->box->getBox().getCenter() -
+      tempMouseOffset = selectedEntity->box.getCenter() -
                         InputManager::getMouseWorldPosition();
     }
 
     if (InputManager::mouseHeld) {
       drawInsideMoveBox(false, insideBox);
 
-      Vector2f prevCenter = selectedEntity->box->getBox().getCenter();
+      Vector2f prevCenter = selectedEntity->box.getCenter();
       Vector2f setCenter =
           InputManager::getMouseWorldPosition() + tempMouseOffset;
       bool horizontalOnly = InputManager::checkInput("dash");
@@ -355,7 +354,7 @@ void MoveTool::update(float deltatime) {
       } else {
       }
 
-      selectedEntity->box->setWithCenter(setCenter);
+      selectedEntity->box.setWithCenter(setCenter);
     }
 
     else {

@@ -166,3 +166,5 @@ bool InputString(const char *label, std::string *strPtr,
 } // namespace ImGui
 
 void imguiDataPanel(PropertyData data);
+
+void setOutputCode(int code);

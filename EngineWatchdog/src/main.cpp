@@ -339,31 +339,35 @@ int attemptCompile(WindowSystem &windowSystem, bool first = false) {
 
   // Run the executable
   windowSystem.closeWindow();
-  int runResult =
+  int gdbRunResult =
       std::system("gdb -batch -ex 'set logging on' "
                   "-ex \"run\" -ex \"bt\" -ex \"quit\" --args index");
-  if (true) {
-    int exitCode = WEXITSTATUS(runResult);
-    std::cout << "EXIT CODE " << exitCode << std::endl;
-    // Handle exit code
-    if (exitCode == EXTCODE_RECOMPILE) {
-      std::cout << "Restarting the editor..." << std::endl;
-    }
 
-    else if (exitCode == EXTCODE_BAD_PROJECT_FOLDER) {
-      resetPrevPath();
-    }
+  std::ifstream exitCodeFile("/tmp/engine/build/outputCode.txt");
+  std::string exitCodeStr;
+  exitCodeFile >> exitCodeStr;
+  int exitCode = std::stoi(exitCodeStr);
+  exitCodeFile.close();
 
-    else if (exitCode == EXTCODE_EXIT) {
-      std::cout << "Exiting the editor." << std::endl;
-      return 0;
-    }
+  std::cout << "EXIT CODE " << exitCode << std::endl;
+  // Handle exit code
+  if (exitCode == EXTCODE_RECOMPILE) {
+    std::cout << "Restarting the editor..." << std::endl;
+  }
 
-    else {
-      windowSystem.createWindow();
-      debugMode = true;
-      return 1;
-    }
+  else if (exitCode == EXTCODE_BAD_PROJECT_FOLDER) {
+    resetPrevPath();
+  }
+
+  else if (exitCode == EXTCODE_EXIT) {
+    std::cout << "Exiting the editor." << std::endl;
+    return 0;
+  }
+
+  else {
+    windowSystem.createWindow();
+    debugMode = true;
+    return 1;
   }
   return 1;
 }

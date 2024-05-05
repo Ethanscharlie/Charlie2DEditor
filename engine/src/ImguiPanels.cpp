@@ -4,7 +4,6 @@
 #include "Serializer.h"
 #include "functionUtils.h"
 #include "imgui.h"
-#include "move.h"
 #include "sharedHeader.h"
 #include <filesystem>
 #include <format>
@@ -98,7 +97,7 @@ void EntitiesPanel::makeMenuBar() {
 
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Recompile")) {
-        std::exit(EXTCODE_RECOMPILE);
+        setOutputCode(EXTCODE_RECOMPILE);
       }
       if (ImGui::MenuItem("Refresh Assets")) {
         refreshAssets();
@@ -154,7 +153,7 @@ void EntitiesPanel::makeMenuBar() {
         ImGui::EndMenu();
       }
       if (ImGui::MenuItem("Exit")) {
-        std::exit(EXTCODE_EXIT);
+        setOutputCode(EXTCODE_EXIT);
       }
       ImGui::EndMenu();
     }
@@ -366,7 +365,7 @@ void EntitiesPanel::update() {
       std::ifstream file(std::filesystem::path(projectFolderpath) /
                          getEditorData()["scene"]);
       if (!file.is_open())
-        std::exit(EXTCODE_BAD_PROJECT_FOLDER);
+        setOutputCode(EXTCODE_BAD_PROJECT_FOLDER);
 
       try {
         json jsonData = json::parse(file);
@@ -381,11 +380,11 @@ void EntitiesPanel::update() {
         deserializeList(jsonData, false);
         writePrevProject(projectFolderpath);
 
-        std::exit(EXTCODE_RECOMPILE);
+        setOutputCode(EXTCODE_RECOMPILE);
       } catch (const std::exception &e) {
         // Handle JSON parsing error
         std::cerr << "Error opening project " << e.what() << std::endl;
-        std::exit(EXTCODE_BAD_PROJECT_FOLDER);
+        setOutputCode(EXTCODE_BAD_PROJECT_FOLDER);
       }
 
       file.close();
@@ -421,7 +420,7 @@ void EntitiesPanel::update() {
 
   ImGui::BeginGroup();
   if (selectedEntity != nullptr) {
-    Box box = selectedEntity->box->getBox();
+    Box box = selectedEntity->box;
 
     ImGui::Text("Name");
     ImGui::SameLine();
@@ -457,7 +456,7 @@ void EntitiesPanel::update() {
                       ImGuiChildFlags_Border);
     ImGui::Text("Entity Box");
 
-    Box ebox = selectedEntity->box->getBox();
+    Box ebox = selectedEntity->box;
     Box prevBox = ebox;
 
     PropertyData eboxData = {"Entity Box", &ebox};
@@ -466,8 +465,8 @@ void EntitiesPanel::update() {
     if (ebox.position.x != prevBox.position.x ||
         ebox.position.y != prevBox.position.y ||
         ebox.size.x != prevBox.size.x || ebox.size.y != prevBox.size.y) {
-      selectedEntity->box->setPosition(ebox.position);
-      selectedEntity->box->setSize(ebox.size);
+      selectedEntity->box.position = (ebox.position);
+      selectedEntity->box.size = (ebox.size);
     }
 
     ImGui::EndChild();
