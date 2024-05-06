@@ -1,3 +1,4 @@
+#include "Entity.h"
 #include "imgui_internal.h"
 
 #include "ImguiPanels.h"
@@ -446,6 +447,22 @@ void EntitiesPanel::update() {
     }
 
     ImGui::InputInt("Layer###EntityLayerInput", &selectedEntity->layer);
+
+    std::string selectedRenderType =
+        selectedEntity->renderPositionType == EntityRenderPositionType::World
+            ? "World"
+            : "Screen";
+    if (ImGui::BeginCombo("Render Type", selectedRenderType.c_str())) {
+      if (ImGui::Selectable("World")) {
+        selectedEntity->renderPositionType = EntityRenderPositionType::World;
+      }
+
+      if (ImGui::Selectable("Screen")) {
+        selectedEntity->renderPositionType = EntityRenderPositionType::Screen;
+      }
+
+      ImGui::EndCombo();
+    }
 
     ImGui::Text(
         std::format("Center {}, {}", box.getCenter().x, box.getCenter().y)

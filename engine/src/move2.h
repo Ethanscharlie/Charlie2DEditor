@@ -14,6 +14,7 @@ public:
   ~MoveTool();
   void start() override;
 
+  Vector2f getCorrectMousePosition();
   void drawBoxLine(Box box, std::array<Uint8, 3> color = {0, 255, 0},
                    Uint8 alpha = 255);
   void drawBox(std::array<bool, 4> selectedSides);
