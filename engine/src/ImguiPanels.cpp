@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include "InputManager.h"
 #include "imgui_internal.h"
 
 #include "ImguiPanels.h"
@@ -9,6 +10,25 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+
+void EntitiesPanel::checkHotkeys() {
+  SDL_PumpEvents();
+  const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
+
+  if (keyboardState[SDL_SCANCODE_LCTRL]) {
+    if (InputManager::keys[SDLK_z]) {
+      showPanels = !showPanels;
+    }
+
+    else if (InputManager::keys[SDLK_r]) {
+      setOutputCode(EXTCODE_RECOMPILE);
+    }
+
+    else if (InputManager::keys[SDLK_t]) {
+      refreshAssets();
+    }
+  }
+}
 
 bool EntitiesPanel::checkEntityIsEngine(Entity *entity) {
   if (entity->tag.size() > 0) {
@@ -305,254 +325,258 @@ void EntitiesPanel::update() {
   //                                               &dockspaceId);
   // auto dock_id_down = ImGui::DockBuilderSplitNode(
   //     dockspaceId, ImGuiDir_Down, 0.2f, nullptr, &dockspaceId);
-
-  // Entities list frame
-  ImGui::Begin("Entities");
-
+  //
   makeMenuBar();
 
-  if (ImGuiFileDialog::Instance()->Display(
-          "NewProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
-    if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-      projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
-      std::string mainRelativeScenePath = "img/Scenes/main.ch2d";
+  checkHotkeys();
 
-      std::filesystem::create_directory(projectFolderpath);
+  if (showPanels) {
+    // Entities list frame
+    ImGui::Begin("Entities");
 
-      // Create Editor Data file
-      json newProjectJsonData;
-      newProjectJsonData["name"] = "New Charlie2D Project";
-      newProjectJsonData["scene"] = mainRelativeScenePath;
-      std::ofstream file(std::filesystem::path(projectFolderpath) /
-                         "EditorData.json");
-      file << std::setw(2) << newProjectJsonData << std::endl;
-      file.close();
+    if (ImGuiFileDialog::Instance()->Display(
+            "NewProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        std::string mainRelativeScenePath = "img/Scenes/main.ch2d";
 
-      // Create subdirectories
-      std::filesystem::create_directory(
-          std::filesystem::path(projectFolderpath) / "img");
-      std::filesystem::create_directory(
-          std::filesystem::path(projectFolderpath) / "src");
+        std::filesystem::create_directory(projectFolderpath);
 
-      std::filesystem::create_directory(
-          std::filesystem::path(projectFolderpath) / "img" / "Scenes");
+        // Create Editor Data file
+        json newProjectJsonData;
+        newProjectJsonData["name"] = "New Charlie2D Project";
+        newProjectJsonData["scene"] = mainRelativeScenePath;
+        std::ofstream file(std::filesystem::path(projectFolderpath) /
+                           "EditorData.json");
+        file << std::setw(2) << newProjectJsonData << std::endl;
+        file.close();
 
-      // Create the main starting scene file
-      json jsonData;
-      jsonData["Scene"];
-      std::ofstream mainSceneFile(std::filesystem::path(projectFolderpath) /
-                                  mainRelativeScenePath);
-      mainSceneFile << std::setw(2) << jsonData << std::endl;
-      mainSceneFile.close();
+        // Create subdirectories
+        std::filesystem::create_directory(
+            std::filesystem::path(projectFolderpath) / "img");
+        std::filesystem::create_directory(
+            std::filesystem::path(projectFolderpath) / "src");
 
-      // Remove all current entities
-      for (Entity *entity : GameManager::getAllObjects()) {
-        if (checkEntityIsEngine(entity))
-          continue;
-        entity->toDestroy = true;
-      }
+        std::filesystem::create_directory(
+            std::filesystem::path(projectFolderpath) / "img" / "Scenes");
 
-      writePrevProject(projectFolderpath);
-    }
+        // Create the main starting scene file
+        json jsonData;
+        jsonData["Scene"];
+        std::ofstream mainSceneFile(std::filesystem::path(projectFolderpath) /
+                                    mainRelativeScenePath);
+        mainSceneFile << std::setw(2) << jsonData << std::endl;
+        mainSceneFile.close();
 
-    ImGuiFileDialog::Instance()->Close();
-  }
-
-  if (ImGuiFileDialog::Instance()->Display(
-          "ChooseProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
-    if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-      projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
-
-      std::ifstream file(std::filesystem::path(projectFolderpath) /
-                         getEditorData()["scene"]);
-      if (!file.is_open())
-        setOutputCode(EXTCODE_BAD_PROJECT_FOLDER);
-
-      try {
-        json jsonData = json::parse(file);
-
-        selectedEntity = nullptr;
+        // Remove all current entities
         for (Entity *entity : GameManager::getAllObjects()) {
           if (checkEntityIsEngine(entity))
             continue;
           entity->toDestroy = true;
         }
 
-        deserializeList(jsonData, false);
         writePrevProject(projectFolderpath);
-
-        setOutputCode(EXTCODE_RECOMPILE);
-      } catch (const std::exception &e) {
-        // Handle JSON parsing error
-        std::cerr << "Error opening project " << e.what() << std::endl;
-        setOutputCode(EXTCODE_BAD_PROJECT_FOLDER);
       }
 
-      file.close();
+      ImGuiFileDialog::Instance()->Close();
     }
 
-    // close
-    ImGuiFileDialog::Instance()->Close();
-  }
+    if (ImGuiFileDialog::Instance()->Display(
+            "ChooseProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-  if (ImGuiFileDialog::Instance()->Display(
-          "ExportProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
-    if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-      std::filesystem::path exportFolder =
-          ImGuiFileDialog::Instance()->GetCurrentPath();
+        std::ifstream file(std::filesystem::path(projectFolderpath) /
+                           getEditorData()["scene"]);
+        if (!file.is_open())
+          setOutputCode(EXTCODE_BAD_PROJECT_FOLDER);
 
-      compileForExport(exportFolder, exportType);
-    }
+        try {
+          json jsonData = json::parse(file);
 
-    // close
-    ImGuiFileDialog::Instance()->Close();
-  }
+          selectedEntity = nullptr;
+          for (Entity *entity : GameManager::getAllObjects()) {
+            if (checkEntityIsEngine(entity))
+              continue;
+            entity->toDestroy = true;
+          }
 
-  if (ImGui::Button("Create")) {
-    Entity *newEntity = GameManager::createEntity("");
-    newEntity->name = "New Entity";
-  }
+          deserializeList(jsonData, false);
+          writePrevProject(projectFolderpath);
 
-  makeEntityList();
-
-  ImGui::End();
-
-  ImGui::Begin("Edit");
-
-  ImGui::BeginGroup();
-  if (selectedEntity != nullptr) {
-    Box box = selectedEntity->box;
-
-    ImGui::Text("Name");
-    ImGui::SameLine();
-    ImGui::InputString("##entityname", &selectedEntity->name);
-
-    ImGui::Text("Tag");
-    ImGui::SameLine();
-    std::string ctag = selectedEntity->tag;
-    std::string prevTag = ctag;
-    ImGui::InputString("##entitytag", &ctag);
-    if (ctag != prevTag) {
-      selectedEntity->changeTag(ctag);
-    }
-
-    ImGui::Text("Group");
-    ImGui::SameLine();
-    ImGui::InputString("##entitygroup", &selectedEntity->group);
-
-    makeTopRowButtons();
-    if (selectedEntity == nullptr) {
-      ImGui::EndGroup();
-      goto FRAME_END;
-    }
-
-    ImGui::InputInt("Layer###EntityLayerInput", &selectedEntity->layer);
-
-    std::string selectedRenderType =
-        selectedEntity->renderPositionType == EntityRenderPositionType::World
-            ? "World"
-            : "Screen";
-    if (ImGui::BeginCombo("Render Type", selectedRenderType.c_str())) {
-      if (ImGui::Selectable("World")) {
-        selectedEntity->renderPositionType = EntityRenderPositionType::World;
-      }
-
-      if (ImGui::Selectable("Screen")) {
-        selectedEntity->renderPositionType = EntityRenderPositionType::Screen;
-      }
-
-      ImGui::EndCombo();
-    }
-
-    ImGui::Text(
-        std::format("Center {}, {}", box.getCenter().x, box.getCenter().y)
-            .c_str());
-
-    // ENTIY BOX
-    ImGui::BeginChild("Entity Box Frame", ImVec2(0, 150),
-                      ImGuiChildFlags_Border);
-    ImGui::Text("Entity Box");
-
-    Box ebox = selectedEntity->box;
-    Box prevBox = ebox;
-
-    PropertyData eboxData = {"Entity Box", &ebox};
-
-    imguiDataPanel(eboxData);
-    if (ebox.position.x != prevBox.position.x ||
-        ebox.position.y != prevBox.position.y ||
-        ebox.size.x != prevBox.size.x || ebox.size.y != prevBox.size.y) {
-      selectedEntity->box.position = (ebox.position);
-      selectedEntity->box.size = (ebox.size);
-    }
-
-    ImGui::EndChild();
-    // EBOXEND
-
-    for (auto [type, component] : selectedEntity->components) {
-      std::string nameWithoutType = getTypeNameWithoutNumbers(type);
-
-      if (nameWithoutType == "TransformEdit")
-        continue;
-      if (nameWithoutType == "entityBox")
-        continue;
-      if (nameWithoutType == "ClickOnEntityListener")
-        continue;
-
-      if (ImGui::CollapsingHeader(nameWithoutType.c_str(),
-                                  ImGuiTreeNodeFlags_DefaultOpen)) {
-        if (ImGui::Button(
-                std::format("Remove### {} ComponentRemove", type.name())
-                    .c_str())) {
-          selectedEntity->remove(type);
-          ImGui::EndGroup();
-          goto FRAME_END;
+          setOutputCode(EXTCODE_RECOMPILE);
+        } catch (const std::exception &e) {
+          // Handle JSON parsing error
+          std::cerr << "Error opening project " << e.what() << std::endl;
+          setOutputCode(EXTCODE_BAD_PROJECT_FOLDER);
         }
 
-        for (PropertyData data : component->propertyRegister) {
-          ImGui::Indent();
-          ImGui::BeginChild(
-              std::format("{} Frame", data.name).c_str(), ImVec2(0, 0),
-              ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
+        file.close();
+      }
 
-          ImGui::Text(data.name.c_str());
-          imguiDataPanel(data);
+      // close
+      ImGuiFileDialog::Instance()->Close();
+    }
 
-          ImGui::EndChild();
-          ImGui::Unindent();
+    if (ImGuiFileDialog::Instance()->Display(
+            "ExportProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
+      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+        std::filesystem::path exportFolder =
+            ImGuiFileDialog::Instance()->GetCurrentPath();
+
+        compileForExport(exportFolder, exportType);
+      }
+
+      // close
+      ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGui::Button("Create")) {
+      Entity *newEntity = GameManager::createEntity("");
+      newEntity->name = "New Entity";
+    }
+
+    makeEntityList();
+
+    ImGui::End();
+
+    ImGui::Begin("Edit");
+
+    ImGui::BeginGroup();
+    if (selectedEntity != nullptr) {
+      Box box = selectedEntity->box;
+
+      ImGui::Text("Name");
+      ImGui::SameLine();
+      ImGui::InputString("##entityname", &selectedEntity->name);
+
+      ImGui::Text("Tag");
+      ImGui::SameLine();
+      std::string ctag = selectedEntity->tag;
+      std::string prevTag = ctag;
+      ImGui::InputString("##entitytag", &ctag);
+      if (ctag != prevTag) {
+        selectedEntity->changeTag(ctag);
+      }
+
+      ImGui::Text("Group");
+      ImGui::SameLine();
+      ImGui::InputString("##entitygroup", &selectedEntity->group);
+
+      makeTopRowButtons();
+      if (selectedEntity == nullptr) {
+        ImGui::EndGroup();
+        goto FRAME_END;
+      }
+
+      ImGui::InputInt("Layer###EntityLayerInput", &selectedEntity->layer);
+
+      std::string selectedRenderType =
+          selectedEntity->renderPositionType == EntityRenderPositionType::World
+              ? "World"
+              : "Screen";
+      if (ImGui::BeginCombo("Render Type", selectedRenderType.c_str())) {
+        if (ImGui::Selectable("World")) {
+          selectedEntity->renderPositionType = EntityRenderPositionType::World;
+        }
+
+        if (ImGui::Selectable("Screen")) {
+          selectedEntity->renderPositionType = EntityRenderPositionType::Screen;
+        }
+
+        ImGui::EndCombo();
+      }
+
+      ImGui::Text(
+          std::format("Center {}, {}", box.getCenter().x, box.getCenter().y)
+              .c_str());
+
+      // ENTIY BOX
+      ImGui::BeginChild("Entity Box Frame", ImVec2(0, 150),
+                        ImGuiChildFlags_Border);
+      ImGui::Text("Entity Box");
+
+      Box ebox = selectedEntity->box;
+      Box prevBox = ebox;
+
+      PropertyData eboxData = {"Entity Box", &ebox};
+
+      imguiDataPanel(eboxData);
+      if (ebox.position.x != prevBox.position.x ||
+          ebox.position.y != prevBox.position.y ||
+          ebox.size.x != prevBox.size.x || ebox.size.y != prevBox.size.y) {
+        selectedEntity->box.position = (ebox.position);
+        selectedEntity->box.size = (ebox.size);
+      }
+
+      ImGui::EndChild();
+      // EBOXEND
+
+      for (auto [type, component] : selectedEntity->components) {
+        std::string nameWithoutType = getTypeNameWithoutNumbers(type);
+
+        if (nameWithoutType == "TransformEdit")
+          continue;
+        if (nameWithoutType == "entityBox")
+          continue;
+        if (nameWithoutType == "ClickOnEntityListener")
+          continue;
+
+        if (ImGui::CollapsingHeader(nameWithoutType.c_str(),
+                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+          if (ImGui::Button(
+                  std::format("Remove### {} ComponentRemove", type.name())
+                      .c_str())) {
+            selectedEntity->remove(type);
+            ImGui::EndGroup();
+            goto FRAME_END;
+          }
+
+          for (PropertyData data : component->propertyRegister) {
+            ImGui::Indent();
+            ImGui::BeginChild(
+                std::format("{} Frame", data.name).c_str(), ImVec2(0, 0),
+                ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
+
+            ImGui::Text(data.name.c_str());
+            imguiDataPanel(data);
+
+            ImGui::EndChild();
+            ImGui::Unindent();
+          }
         }
       }
-    }
-    if (ImGui::BeginCombo("##combo", "Add a Component")) {
+      if (ImGui::BeginCombo("##combo", "Add a Component")) {
 
-      for (auto &[key, component] : GameManager::componentRegistry) {
-        bool isSelected = false;
-        const char *keyc = key.c_str();
-        if (ImGui::Selectable(keyc, &isSelected)) {
-        }
+        for (auto &[key, component] : GameManager::componentRegistry) {
+          bool isSelected = false;
+          const char *keyc = key.c_str();
+          if (ImGui::Selectable(keyc, &isSelected)) {
+          }
 
-        if (isSelected) {
-          Component *component =
-              GameManager::componentRegistry[key](selectedEntity);
-          if (!component->typeIsRendering)
-            component->standardUpdate = false;
+          if (isSelected) {
+            Component *component =
+                GameManager::componentRegistry[key](selectedEntity);
+            if (!component->typeIsRendering)
+              component->standardUpdate = false;
+          }
         }
+        ImGui::EndCombo();
       }
-      ImGui::EndCombo();
+    } else {
+      ImGui::Text("No entity selected");
     }
-  } else {
-    ImGui::Text("No entity selected");
+    ImGui::EndGroup();
+
+  FRAME_END:
+    ImGui::End();
+
+    ImGui::Begin("Console");
+
+    ImGui::Text(newlineInvertString(buffer.str()).c_str());
+
+    ImGui::End();
   }
-  ImGui::EndGroup();
-
-FRAME_END:
-  ImGui::End();
-
-  ImGui::Begin("Console");
-
-  ImGui::Text(newlineInvertString(buffer.str()).c_str());
-
-  ImGui::End();
 
   ImGui::Render();
   ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());

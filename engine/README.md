@@ -2,8 +2,8 @@
 #### The Offical Editor of Charlie2D!
 
 ### TODO:
-* And renderAsUI to entity definition and matching rendering components to work with that system (Also add to editor) 
 * Add dropdown to change collection 
+* Tiles <- Gyatt Damn
 * Save Editor State (ImguiPanels, and Camera)
 * Fix move tool ctrl and shift
 
@@ -11,6 +11,7 @@
 * Fix file select not being reletive to img/
 * Add buttom to exit retry error mode with new project select
 * Change Collider Component to Solid Body
+* Keybind to hide ui
 
 Not required just yet
 * Add Line and Polygon collision detection

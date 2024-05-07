@@ -68,7 +68,6 @@ void MoveTool::drawBoxLine(Box box, std::array<Uint8, 3> color, Uint8 alpha) {
     renderPos += GameManager::gameWindowSize / 2;
     renderBox = box;
     renderBox.position = renderPos;
-    renderBox.size *= Camera::getScale();
     break;
   }
 
@@ -81,7 +80,16 @@ void MoveTool::drawBoxLine(Box box, std::array<Uint8, 3> color, Uint8 alpha) {
 
 void MoveTool::drawBox(std::array<bool, 4> selectedSides) {
   // Calculate the scaled stroke once
-  int scaledStroke = stroke / Camera::getScale();
+  int scaledStroke;
+  switch (selectedEntity->renderPositionType) {
+  case EntityRenderPositionType::World:
+    scaledStroke = stroke / Camera::getScale();
+    break;
+
+  case EntityRenderPositionType::Screen:
+    scaledStroke = stroke;
+    break;
+  }
 
   // Get the selectedEntity's bounding box
   Box selectedEntityBox = selectedEntity->box;

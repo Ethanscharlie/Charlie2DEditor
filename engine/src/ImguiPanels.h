@@ -20,6 +20,7 @@ enum class ExportTypes;
 
 class EntitiesPanel : public ExtendedComponent {
 public:
+  void checkHotkeys();
   bool checkEntityIsEngine(Entity *entity);
   bool checkEntityIsEngine(std::string tag);
   void makeEntityList();
@@ -31,5 +32,6 @@ public:
 
 private:
   bool setupDockspaces = true;
+  bool showPanels = true;
   ExportTypes exportType;
 };
