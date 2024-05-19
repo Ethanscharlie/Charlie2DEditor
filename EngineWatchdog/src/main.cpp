@@ -176,35 +176,7 @@ public:
       if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
         fs::path projectFolderpath =
             ImGuiFileDialog::Instance()->GetCurrentPath();
-        std::string mainRelativeScenePath = "img/Scenes/main.ch2d";
-
-        std::filesystem::create_directory(projectFolderpath);
-
-        // Create Editor Data file
-        nlohmann::json newProjectJsonData;
-        newProjectJsonData["name"] = "New Charlie2D Project";
-        newProjectJsonData["scene"] = mainRelativeScenePath;
-        std::ofstream file(std::filesystem::path(projectFolderpath) /
-                           "EditorData.json");
-        file << std::setw(2) << newProjectJsonData << std::endl;
-        file.close();
-
-        // Create subdirectories
-        std::filesystem::create_directory(
-            std::filesystem::path(projectFolderpath) / "img");
-        std::filesystem::create_directory(
-            std::filesystem::path(projectFolderpath) / "src");
-
-        std::filesystem::create_directory(
-            std::filesystem::path(projectFolderpath) / "img" / "Scenes");
-
-        // Create the main starting scene file
-        nlohmann::json jsonData;
-        jsonData["Scene"];
-        std::ofstream mainSceneFile(std::filesystem::path(projectFolderpath) /
-                                    mainRelativeScenePath);
-        mainSceneFile << std::setw(2) << jsonData << std::endl;
-        mainSceneFile.close();
+        createNewProject(projectFolderpath);
 
         std::ofstream newProjectFile("/tmp/engine/prevProject.txt");
         newProjectFile << removeQuotes(projectFolderpath) << std::endl;
@@ -255,7 +227,7 @@ public:
     if (ImGui::Button("Wipe prevProject and close")) {
       resetPrevPath();
       std::exit(0);
-    } 
+    }
 
     std::ifstream gdbFile("/tmp/engine/build/gdb.txt"); // Open the file
     std::stringstream gdbText;

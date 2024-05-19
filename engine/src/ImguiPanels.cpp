@@ -241,6 +241,13 @@ void EntitiesPanel::makeMenuBar() {
       ImGui::EndMenu();
     }
 
+    if (ImGui::BeginMenu("Settings")) {
+      if (ImGui::MenuItem("Open settings ->")) {
+        openSettingsPanel();
+      }
+      ImGui::EndMenu();
+    }
+
     ImGui::Text("        ");
     ImGui::Text("Current Project");
     ImGui::Text(std::format("[{}]", projectFolderpath).c_str());
@@ -358,35 +365,7 @@ void EntitiesPanel::update() {
             "NewProject", ImGuiWindowFlags_NoCollapse, ImVec2(1000, 700))) {
       if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
         projectFolderpath = ImGuiFileDialog::Instance()->GetCurrentPath();
-        std::string mainRelativeScenePath = "img/Scenes/main.ch2d";
-
-        std::filesystem::create_directory(projectFolderpath);
-
-        // Create Editor Data file
-        json newProjectJsonData;
-        newProjectJsonData["name"] = "New Charlie2D Project";
-        newProjectJsonData["scene"] = mainRelativeScenePath;
-        std::ofstream file(std::filesystem::path(projectFolderpath) /
-                           "EditorData.json");
-        file << std::setw(2) << newProjectJsonData << std::endl;
-        file.close();
-
-        // Create subdirectories
-        std::filesystem::create_directory(
-            std::filesystem::path(projectFolderpath) / "img");
-        std::filesystem::create_directory(
-            std::filesystem::path(projectFolderpath) / "src");
-
-        std::filesystem::create_directory(
-            std::filesystem::path(projectFolderpath) / "img" / "Scenes");
-
-        // Create the main starting scene file
-        json jsonData;
-        jsonData["Scene"];
-        std::ofstream mainSceneFile(std::filesystem::path(projectFolderpath) /
-                                    mainRelativeScenePath);
-        mainSceneFile << std::setw(2) << jsonData << std::endl;
-        mainSceneFile.close();
+        createNewProject(projectFolderpath);
 
         // Remove all current entities
         for (Entity *entity : GameManager::getAllObjects()) {
@@ -608,6 +587,9 @@ void EntitiesPanel::update() {
     ImGui::Text(newlineInvertString(buffer.str()).c_str());
 
     ImGui::End();
+
+    if (showSettings)
+      makeSettingsPanel();
   }
 
   ImGui::Render();
@@ -615,4 +597,33 @@ void EntitiesPanel::update() {
 
   SDL_RenderSetLogicalSize(GameManager::renderer, GameManager::gameWindowSize.x,
                            GameManager::gameWindowSize.y);
+}
+
+void EntitiesPanel::openSettingsPanel() {
+  editorSettingsJson = getEditorData();
+  showSettings = true;
+}
+
+void EntitiesPanel::makeSettingsPanel() {
+  ImGui::Begin("Settings");
+
+  ImGui::Text("Logical Width");
+  ImGui::SameLine();
+  float logicalWidth = static_cast<float>(editorSettingsJson["logicalWidth"]);
+  ImGui::InputFloat("##logicalWidth", &logicalWidth);
+  editorSettingsJson["logicalWidth"] = logicalWidth;
+
+  ImGui::Text("Logical Height");
+  ImGui::SameLine();
+  float logicalHeight = static_cast<float>(editorSettingsJson["logicalHeight"]);
+  ImGui::InputFloat("##logicalHeight", &logicalHeight);
+  editorSettingsJson["logicalHeight"] = logicalHeight;
+
+  if (ImGui::Button("Save"))
+    changeEditorData(editorSettingsJson);
+
+  if (ImGui::Button("Close"))
+    showSettings = false;
+
+  ImGui::End();
 }

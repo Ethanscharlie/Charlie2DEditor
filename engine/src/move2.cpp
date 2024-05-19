@@ -47,6 +47,8 @@ Vector2f MoveTool::getCorrectMousePosition() {
   case EntityRenderPositionType::Screen:
     return InputManager::getMouseUIPosition();
   }
+
+  return {0, 0};
 }
 
 void MoveTool::drawBoxLine(Box box, std::array<Uint8, 3> color, Uint8 alpha) {

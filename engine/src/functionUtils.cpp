@@ -68,26 +68,32 @@ int compileForExport(std::filesystem::path exportFolder,
   std::string cmakeBuildFilesCommand;
   switch (exportType) {
   case ExportTypes::Linux:
-    cmakeGenerateBuildFilesCommand =
-        std::format("cmake -DPROJECT_PATH=\"{}\" "
-                    "-DCMAKE_INCLUDE_PATH=\"../include\" -DFINAL_BUILD=ON {}",
-                    projectFolderpath, "/tmp/engine");
+    cmakeGenerateBuildFilesCommand = std::format(
+        "cmake -DPROJECT_PATH=\"{}\" "
+        "-DCMAKE_INCLUDE_PATH=\"../include\" -DFINAL_BUILD=ON {} "
+        "-DLOGICAL_WIDTH={} -DLOGICAL_HEIGHT={}",
+        projectFolderpath, "/tmp/engine", GameManager::gameWindowSize.x,
+        GameManager::gameWindowSize.y);
     cmakeBuildFilesCommand = "cmake --build . && make";
     break;
   case ExportTypes::Windows:
-    cmakeGenerateBuildFilesCommand =
-        std::format("cmake -DPROJECT_PATH=\"{}\" "
-                    "-DCMAKE_INCLUDE_PATH=\"../include\" "
-                    "-DCMAKE_TOOLCHAIN_FILE=/home/ethanscharlie/TC-mingw.cmake "
-                    "-DFINAL_BUILD=ON {}",
-                    projectFolderpath, "/tmp/engine");
+    cmakeGenerateBuildFilesCommand = std::format(
+        "cmake -DPROJECT_PATH=\"{}\" "
+        "-DCMAKE_INCLUDE_PATH=\"../include\" "
+        "-DCMAKE_TOOLCHAIN_FILE=/home/ethanscharlie/TC-mingw.cmake "
+        " -DLOGICAL_WIDTH={} -DLOGICAL_HEIGHT={}"
+        "-DFINAL_BUILD=ON {}",
+        projectFolderpath, "/tmp/engine", GameManager::gameWindowSize.x,
+        GameManager::gameWindowSize.y);
     cmakeBuildFilesCommand = "make";
     break;
   case ExportTypes::Web:
-    cmakeGenerateBuildFilesCommand =
-        std::format("emcmake cmake -DPROJECT_PATH=\"{}\" "
-                    "-DCMAKE_INCLUDE_PATH=\"../include\" -DFINAL_BUILD=ON {}",
-                    projectFolderpath, "/tmp/engine");
+    cmakeGenerateBuildFilesCommand = std::format(
+        "emcmake cmake -DPROJECT_PATH=\"{}\" "
+        "-DCMAKE_INCLUDE_PATH=\"../include\" -DFINAL_BUILD=ON {} "
+        "-DLOGICAL_WIDTH={} -DLOGICAL_HEIGHT={}",
+        projectFolderpath, "/tmp/engine", GameManager::gameWindowSize.x,
+        GameManager::gameWindowSize.y);
     cmakeBuildFilesCommand = "emmake make";
     break;
   }

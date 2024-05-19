@@ -24,6 +24,9 @@ file(GLOB_RECURSE IMGUI_SOURCES
 option(FINAL_BUILD "Final project build" OFF)
 option(COMIPLE_EDITOR "Compile the editor and project" ON)
 
+set(LOGICAL_WIDTH)
+set(LOGICAL_HEIGHT)
+
 # Define common source files
 if (FINAL_BUILD) 
   set(COMMON_SOURCES
@@ -32,6 +35,7 @@ if (FINAL_BUILD)
     src/ImguiPanels.cpp
     ${OBJECTS_SOURCES}
     ${Game_SOURCES}
+    ${CMAKE_SOURCE_DIR}/shared/sharedHeader.cpp
     )
 
   if (EMSCRIPTEN OR WIN32)
@@ -56,6 +60,7 @@ else()
       ${OBJECTS_SOURCES}
       ${Game_SOURCES}
       ${IMGUI_SOURCES}
+      ${CMAKE_SOURCE_DIR}/shared/sharedHeader.cpp
       )
   else()
     set(COMMON_SOURCES
@@ -154,6 +159,8 @@ file(COPY /usr/local/share/engine/sysimg DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${PROJECT_PATH}/EditorData.json DESTINATION ${CMAKE_BINARY_DIR})
 
 ADD_DEFINITIONS( -D_PROJECT_PATH=\"${PROJECT_PATH}\")
+ADD_DEFINITIONS( -D_LOGICAL_WIDTH=\"${LOGICAL_WIDTH}\")
+ADD_DEFINITIONS( -D_LOGICAL_HEIGHT=\"${LOGICAL_HEIGHT}\")
 
 # set output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

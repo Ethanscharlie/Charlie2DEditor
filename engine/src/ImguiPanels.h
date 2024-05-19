@@ -26,6 +26,9 @@ public:
   void makeTopRowButtons();
   void save();
   void duplicateEntity();
+  void openSettingsPanel();
+
+  void makeSettingsPanel();
 
   void start() override;
   void update() override;
@@ -33,5 +36,7 @@ public:
 private:
   bool setupDockspaces = true;
   bool showPanels = true;
+  bool showSettings = false;
+  json editorSettingsJson;
   ExportTypes exportType;
 };

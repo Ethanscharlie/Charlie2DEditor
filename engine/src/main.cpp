@@ -2,15 +2,23 @@
 
 #include "Charlie2D.h"
 #include "include_tmp.h"
+#include <filesystem>
+#include <fstream>
 #include <sstream>
+#include <string>
 
 #define PROJECT_PATH _PROJECT_PATH
+#define LOGICAL_HEIGHT _LOGICAL_HEIGHT
+#define LOGICAL_WIDTH _LOGICAL_WIDTH
 
 #ifdef FINAL_BUILD
 
 int main(int argc, char *argv[]) {
   std::filesystem::path projectFolderpath = PROJECT_PATH;
-  GameManager::init();
+  Vector2f size;
+  size.x = std::stof(LOGICAL_WIDTH);
+  size.y = std::stof(LOGICAL_HEIGHT);
+  GameManager::init(size);
 
   std::ifstream editorDataFile("EditorData.json");
   json editorJsonData = json::parse(editorDataFile);
@@ -36,8 +44,8 @@ int main(int argc, char *argv[]) {
 #include "InputManager.h"
 #include "Vector2f.h"
 #include "functionUtils.h"
-#include <string>
 #include "sharedHeader.h"
+#include <string>
 
 #include "ImguiPanels.h"
 #include "imguiTheme.h"
@@ -93,7 +101,11 @@ int main(int argc, char *argv[]) {
   // projectFilepath =
   //     std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
-  GameManager::init({704, 800});
+  std::ifstream editorSettingsFile(std::filesystem::path(projectFolderpath) /
+                                   "EditorData.json");
+  json editorData = json::parse(editorSettingsFile);
+  GameManager::init({editorData["logicalWidth"], editorData["logicalHeight"]});
+  editorSettingsFile.close();
 
   SetupImGuiStyle();
 
