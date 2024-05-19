@@ -60,9 +60,6 @@ class CameraMover : public ExtendedComponent {
 public:
   void update() override {
     if (!inRunState) {
-      Camera::position +=
-          InputManager::checkAxis() * speed * GameManager::deltaTime;
-
       Camera::scale += InputManager::mouseScroll * 0.10;
 
       if (InputManager::checkInput("jumpTrigger")) {
@@ -90,13 +87,13 @@ private:
 class MoveTool;
 
 int main(int argc, char *argv[]) {
-  // std::cout.rdbuf(buffer.rdbuf());
+  std::cout.rdbuf(buffer.rdbuf());
 
   projectFolderpath = PROJECT_PATH;
   // projectFilepath =
   //     std::filesystem::path(projectFolderpath) / "Project.ch2dscene";
 
-  GameManager::init();
+  GameManager::init({704, 800});
 
   SetupImGuiStyle();
 

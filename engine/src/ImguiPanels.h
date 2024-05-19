@@ -21,11 +21,11 @@ enum class ExportTypes;
 class EntitiesPanel : public ExtendedComponent {
 public:
   void checkHotkeys();
-  bool checkEntityIsEngine(Entity *entity);
-  bool checkEntityIsEngine(std::string tag);
   void makeEntityList();
   void makeMenuBar();
   void makeTopRowButtons();
+  void save();
+  void duplicateEntity();
 
   void start() override;
   void update() override;

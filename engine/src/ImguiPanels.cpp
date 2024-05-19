@@ -1,5 +1,6 @@
 #include "Entity.h"
 #include "InputManager.h"
+#include "SDL_keycode.h"
 #include "imgui_internal.h"
 
 #include "ImguiPanels.h"
@@ -10,6 +11,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <unistd.h>
 
 void EntitiesPanel::checkHotkeys() {
   SDL_PumpEvents();
@@ -27,35 +29,32 @@ void EntitiesPanel::checkHotkeys() {
     else if (InputManager::keys[SDLK_t]) {
       refreshAssets();
     }
-  }
-}
 
-bool EntitiesPanel::checkEntityIsEngine(Entity *entity) {
-  if (entity->tag.size() > 0) {
-    if (entity->tag[0] == '$')
-      return true;
-  }
+    else if (InputManager::keys[SDLK_s]) {
+      save();
+    }
 
-  return false;
-}
-
-bool EntitiesPanel::checkEntityIsEngine(std::string tag) {
-  if (tag.size() > 0) {
-    if (tag[0] == '$')
-      return true;
+    else if (InputManager::keys[SDLK_d]) {
+      duplicateEntity();
+    }
   }
 
-  return false;
+  if (InputManager::keys[SDLK_DELETE]) {
+    selectedEntity->toDestroy = true;
+    selectedEntity = nullptr;
+  }
 }
 
 void EntitiesPanel::start() {
   entity->useLayer = true;
-  entity->layer = 100;
+  entity->layer = 1000;
 
   std::ifstream file(std::filesystem::path(projectFolderpath) /
                      getEditorData()["scene"]);
   json jsonData = json::parse(file);
   file.close();
+
+  refreshAssets();
 
   deserializeList(jsonData, false);
 }
@@ -68,12 +67,14 @@ void EntitiesPanel::makeEntityList() {
       entitiesWithGroups;
 
   for (auto [tag, entityList] : GameManager::entities) {
-    if (checkEntityIsEngine(tag))
+    if (checkTagIsEngine(tag))
       continue;
     if (entityList.size() <= 0)
       continue;
 
     for (Entity *entity : entityList) {
+      if (checkEntityIsEngine(entity))
+        continue;
       entitiesWithGroups[tag][entity->group].push_back(entity);
     }
   }
@@ -88,6 +89,8 @@ void EntitiesPanel::makeEntityList() {
           if (ImGui::TreeNodeEx(group.c_str(),
                                 ImGuiTreeNodeFlags_DefaultOpen)) {
             for (Entity *entity : entities) {
+              if (checkEntityIsEngine(entity))
+                continue;
               std::string text =
                   std::format("{} ({})", entity->name, entity->iid);
               if (ImGui::Selectable(text.c_str(), entity == selectedEntity)) {
@@ -98,6 +101,8 @@ void EntitiesPanel::makeEntityList() {
           }
         } else {
           for (Entity *entity : entities) {
+            if (checkEntityIsEngine(entity))
+              continue;
             std::string text =
                 std::format("{} ({})", entity->name, entity->iid);
             if (ImGui::Selectable(text.c_str(), entity == selectedEntity)) {
@@ -111,6 +116,35 @@ void EntitiesPanel::makeEntityList() {
   }
 
   // ImGui::EndChild();
+}
+
+void EntitiesPanel::duplicateEntity() {
+  json jsonData = serialize(selectedEntity);
+  Entity *dentity = deserialize(jsonData, false);
+
+  std::random_device dev;
+  std::mt19937 rng(dev());
+  std::uniform_int_distribution<std::mt19937::result_type> dist(1, 100000);
+  dentity->iid = dist(rng);
+
+  changeSelectedEntity(dentity);
+}
+
+void EntitiesPanel::save() {
+  json jsonEntitesData = serializeAllEntities();
+  json editorData = getEditorData();
+
+  changeEditorData(editorData);
+
+  std::ofstream file(std::filesystem::path(projectFolderpath) /
+                     editorData["scene"]);
+  file << std::setw(2) << jsonEntitesData << std::endl;
+  file.close();
+  std::cout << "Saved to "
+            << std::filesystem::path(projectFolderpath) / editorData["scene"]
+            << "\n";
+
+  refreshAssets();
 }
 
 void EntitiesPanel::makeMenuBar() {
@@ -130,27 +164,17 @@ void EntitiesPanel::makeMenuBar() {
             "NewProject", "Choose Project Folder", nullptr, config);
       }
       if (ImGui::MenuItem("Save") && !inRunState) {
-        json jsonEntitesData = serializeAllEntities();
-        json editorData = getEditorData();
-
-        changeEditorData(editorData);
-
-        std::ofstream file(std::filesystem::path(projectFolderpath) /
-                           editorData["scene"]);
-        file << std::setw(2) << jsonEntitesData << std::endl;
-        file.close();
-        std::cout << "Saved to "
-                  << std::filesystem::path(projectFolderpath) /
-                         editorData["scene"]
-                  << "\n";
+        save();
       }
       if (ImGui::MenuItem("Open") && !inRunState) {
         IGFD::FileDialogConfig config;
         config.path = projectFolderpath;
+        refreshAssets();
         ImGuiFileDialog::Instance()->OpenDialog("ChooseProject", "Choose File",
                                                 nullptr, config);
       }
       if (ImGui::BeginMenu("Export")) {
+        refreshAssets();
         auto openExportFileDialog = []() {
           IGFD::FileDialogConfig config;
           ImGuiFileDialog::Instance()->OpenDialog(
@@ -238,15 +262,7 @@ void EntitiesPanel::makeTopRowButtons() {
   ImGui::SameLine();
 
   if (ImGui::Button("Duplicate")) {
-    json jsonData = serialize(selectedEntity);
-    Entity *dentity = deserialize(jsonData);
-
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(1, 100000);
-    dentity->iid = dist(rng);
-
-    changeSelectedEntity(dentity);
+    duplicateEntity();
   }
 
   ImGui::SameLine();
@@ -255,7 +271,7 @@ void EntitiesPanel::makeTopRowButtons() {
     IGFD::FileDialogConfig config;
     config.path = projectFolderpath;
     ImGuiFileDialog::Instance()->OpenDialog("MakePrefab", "Choose File",
-                                            ".ch2dsec", config);
+                                            ".ch2d", config);
   }
 
   if (ImGuiFileDialog::Instance()->Display(
@@ -264,7 +280,7 @@ void EntitiesPanel::makeTopRowButtons() {
       std::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
       std::cout << filepath << "\n";
 
-      json jsonData = serialize(selectedEntity);
+      json jsonData = serializeList({selectedEntity});
       std::ofstream file(filepath);
       file << std::setw(2) << jsonData << std::endl;
       file.close();
@@ -276,6 +292,10 @@ void EntitiesPanel::makeTopRowButtons() {
 }
 
 void EntitiesPanel::update() {
+  if (selectedEntity != nullptr && selectedEntity->toDestroy) {
+    selectedEntity = nullptr;
+  }
+
   SDL_RenderSetLogicalSize(GameManager::renderer,
                            GameManager::currentWindowSize.x,
                            GameManager::currentWindowSize.y);
@@ -376,6 +396,7 @@ void EntitiesPanel::update() {
         }
 
         writePrevProject(projectFolderpath);
+        refreshAssets();
       }
 
       ImGuiFileDialog::Instance()->Close();
@@ -431,9 +452,20 @@ void EntitiesPanel::update() {
       ImGuiFileDialog::Instance()->Close();
     }
 
+    if (ImGui::BeginCombo(
+            "Collection",
+            static_cast<std::string>(getEditorData()["scene"]).c_str())) {
+      for (std::string file : collections) {
+        if (ImGui::Selectable(file.c_str())) {
+          changeMainScene(file);
+        }
+      }
+
+      ImGui::EndCombo();
+    }
+
     if (ImGui::Button("Create")) {
       Entity *newEntity = GameManager::createEntity("");
-      newEntity->name = "New Entity";
     }
 
     makeEntityList();

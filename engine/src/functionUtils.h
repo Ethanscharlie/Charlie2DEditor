@@ -1,5 +1,6 @@
 #pragma once
 #include <Charlie2D.h>
+#include "ShadowFilter.h"
 
 class TransformEdit;
 extern std::string projectFolderpath;
@@ -8,8 +9,12 @@ extern json editorTempRunSave;
 extern bool inRunState;
 extern std::vector<Entity *> usedChildren;
 extern std::stringstream buffer;
+extern std::vector<std::string> collections;
 
 enum class ExportTypes { Linux, Windows, Web };
+
+std::vector<std::string>
+getAllFilesRecursive(const std::filesystem::path &path);
 
 /**
  * @brief Serialize all entities in the GameManager to a JSON format.
@@ -150,6 +155,8 @@ json getMainScene();
  */
 void changeMainScene(std::filesystem::path newScenePath);
 
+void loadCollectionAsScene(json collection);
+
 /**
  * @brief Inverts the lines in the input string.
  *
@@ -168,3 +175,9 @@ bool InputString(const char *label, std::string *strPtr,
 void imguiDataPanel(PropertyData data);
 
 void setOutputCode(int code);
+
+bool checkEntityIsEngine(Entity *entity);
+
+bool checkTagIsEngine(std::string tag);
+
+std::filesystem::path lexrelImgPath(std::filesystem::path path);

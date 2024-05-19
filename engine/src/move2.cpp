@@ -216,6 +216,7 @@ void MoveTool::handleSideDrag(LockDirection lockDirection, bool *resetCursor,
     if (InputManager::mouseHeld) {
       if (lock != lockDirection)
         tempResizeBox = selectedEntity->box;
+      if (lock != LockDirection::None && lock != lockDirection) return;
       lock = lockDirection;
 
       bool isSE = lock == LockDirection::Bottom || lock == LockDirection::Right;
@@ -355,9 +356,10 @@ void MoveTool::update(float deltatime) {
 
   std::array<bool, 4> selectedSides = {false, false, false, false};
 
-  if (checkIfMouseInside(insideBox) && lock == LockDirection::None) {
+  if ((checkIfMouseInside(insideBox) && lock == LockDirection::None) || lock == LockDirection::Move) {
     SDL_SetCursor(cursorSizeAll);
     resetCursor = false;
+    lock = LockDirection::Move;
 
     if (InputManager::checkInput("fire")) {
       tempMouseOffset =

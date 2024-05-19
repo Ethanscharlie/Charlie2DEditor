@@ -5,7 +5,7 @@
 #include "functionUtils.h"
 #include <array>
 
-enum class LockDirection { Right, Left, Top, Bottom, None };
+enum class LockDirection { Right, Left, Top, Bottom, None, Move };
 
 class MoveTool : public Component {
 public:

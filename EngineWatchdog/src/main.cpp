@@ -252,6 +252,11 @@ public:
       debugMode = false;
     }
 
+    if (ImGui::Button("Wipe prevProject and close")) {
+      resetPrevPath();
+      std::exit(0);
+    } 
+
     std::ifstream gdbFile("/tmp/engine/build/gdb.txt"); // Open the file
     std::stringstream gdbText;
     gdbText << gdbFile.rdbuf();
@@ -345,7 +350,13 @@ int attemptCompile(WindowSystem &windowSystem, bool first = false) {
 
   std::ifstream exitCodeFile("/tmp/engine/build/outputCode.txt");
   std::string exitCodeStr;
-  exitCodeFile >> exitCodeStr;
+
+  if (exitCodeFile) {
+    exitCodeFile >> exitCodeStr;
+  } else {
+    exitCodeStr = "0";
+  }
+
   int exitCode = std::stoi(exitCodeStr);
   exitCodeFile.close();
 

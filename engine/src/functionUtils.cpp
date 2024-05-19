@@ -1,9 +1,11 @@
+#include "GameManager.h"
 #include "imgui_internal.h"
 
 #include "functionUtils.h"
 // #include "imguiDataPanels.h"
 #include "ImGuiFileDialog.h"
 #include "nlohmann/json.hpp"
+#include <complex>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -14,6 +16,21 @@ json editorTempRunSave;
 bool inRunState = false;
 std::vector<Entity *> usedChildren;
 std::stringstream buffer;
+std::vector<std::string> collections;
+
+std::vector<std::string>
+getAllFilesRecursive(const std::filesystem::path &path) {
+  std::vector<std::string> result;
+
+  for (const auto &p : std::filesystem::recursive_directory_iterator(path)) {
+    if (!std::filesystem::is_directory(p)) {
+      std::filesystem::path path = p.path();
+      result.push_back(path.string());
+    }
+  }
+
+  return result;
+}
 
 json serializeAllEntities() {
   json entitiesListJson;
@@ -37,11 +54,7 @@ void writePrevProject(std::filesystem::path projectFolderpath) {
 void changeSelectedEntity(Entity *entity) {
   if (entity->tag[0] == '$')
     return;
-  if (selectedEntity != nullptr) {
-    // selectedEntity->remove<TransformEdit>();
-  }
   selectedEntity = entity;
-  // selectedEntity->add<TransformEdit>();
 }
 
 int compileForExport(std::filesystem::path exportFolder,
@@ -124,6 +137,16 @@ void refreshAssets() {
   for (Sprite *sprite : GameManager::getComponents<Sprite>()) {
     sprite->image = Image(sprite->image.path);
   }
+
+  // Get collections
+  collections.clear();
+  const auto allFilesRecursive =
+      getAllFilesRecursive(std::filesystem::path(projectFolderpath) / "img");
+  for (const std::string &file : allFilesRecursive) {
+    if (file.substr(file.find_last_of(".") + 1) != "ch2d")
+      continue;
+    collections.push_back(lexrelImgPath(file));
+  }
 }
 
 json getEditorData() {
@@ -155,6 +178,21 @@ void changeMainScene(std::filesystem::path newScenePath) {
   json newEditorData = getEditorData();
   newEditorData["scene"] = newScenePath;
   changeEditorData(newEditorData);
+
+  loadCollectionAsScene(getMainScene());
+}
+
+void loadCollectionAsScene(json collection) {
+  const json &jsonData = collection;
+
+  selectedEntity = nullptr;
+  for (Entity *entity : GameManager::getAllObjects()) {
+    if (checkEntityIsEngine(entity))
+      continue;
+    entity->toDestroy = true;
+  }
+
+  deserializeList(jsonData, false);
 }
 
 std::string newlineInvertString(const std::string &input) {
@@ -274,10 +312,7 @@ void imguiDataPanel(PropertyData data) {
                                              ImVec2(1000, 700))) {
       if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
         imagePath = ImGuiFileDialog::Instance()->GetFilePathName();
-        imagePath = std::filesystem::absolute(imagePath).lexically_relative(
-            projectFolderpath);
-        imagePathString = imagePath.string();
-        imagePath = imagePathString.substr(3);
+        imagePath = lexrelImgPath(imagePath);
       }
 
       // close
@@ -301,7 +336,8 @@ void imguiDataPanel(PropertyData data) {
   //   std::string fontPath = font->filepath;
   //   std::string prevFontPath = fontPath;
   //
-  //   if (ImGui::Button(std::format("Open File Dialog###{}fontselect", data.name)
+  //   if (ImGui::Button(std::format("Open File Dialog###{}fontselect",
+  //   data.name)
   //                         .c_str())) {
   //     IGFD::FileDialogConfig config;
   //     config.path = projectFolderpath + "/img";
@@ -380,4 +416,32 @@ void setOutputCode(int code) {
   file << std::to_string(code);
   file.close();
   std::exit(0);
+}
+
+bool checkEntityIsEngine(Entity *entity) {
+  if (entity->tag.size() > 0) {
+    if (entity->tag[0] == '$')
+      return true;
+    if (entity->checkComponent<ShadowFilter>()) {
+      if (entity->get<ShadowFilter>() == GameManager::shadowFilter)
+        return true;
+    }
+  }
+
+  return false;
+}
+
+bool checkTagIsEngine(std::string tag) {
+  if (tag.size() > 0) {
+    if (tag[0] == '$')
+      return true;
+  }
+
+  return false;
+}
+
+std::filesystem::path lexrelImgPath(std::filesystem::path path) {
+  std::filesystem::path newPath =
+      std::filesystem::absolute(path).lexically_relative(projectFolderpath);
+  return newPath;
 }
